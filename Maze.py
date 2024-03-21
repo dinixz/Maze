@@ -152,3 +152,5 @@ def print_sequence(node:Maze):
 maze = Maze(np.zeros((3,3)), [], obstacle= [])
 print(maze)
 
+#bfs, iterative deepening, a*, greedy(?)
+#is solvable
