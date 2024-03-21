@@ -38,17 +38,14 @@ class Maze:
             self.generate_obstacles(obstacle)
         
     def __str__(self) -> str:
-        string = ' ' + '-' * ( 2 * self.columns - 1) + ' \n'
+        string = ''
         for line in self.maze:
             for cell in line:
                 if cell == -1:
-                    string += '|#'
-                elif cell == 0:
-                    string += '| '
+                    string += '#'
                 else:
-                    string += '|' + str(int(cell))
-            string += '|\n'
-        string += ' ' + '-' * ( 2 * self.columns - 1) + ' \n'
+                    string += str(int(cell))
+            string += '\n'
         return string
     
     def __eq__(self, other: object) -> bool:
@@ -152,11 +149,6 @@ def print_sequence(node:Maze):
         print(maze)
         print()
     
-# maze = Maze(np.zeros((3,3)), [], obstacle= [])
-# print(maze)
-# print(maze.manhattan_distance())
-# for _ in range(5):
-#     children = maze.children()
-#     maze = random.choice(children)
-    
-# print(maze)
+maze = Maze(np.zeros((3,3)), [], obstacle= [])
+print(maze)
+
