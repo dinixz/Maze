@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import math
 from copy import deepcopy
 from collections import deque
 
@@ -164,10 +165,6 @@ class Maze:
         self.cur_col += 1
         return True
     
-    def manhattan_distance(self) -> int:
-    # Calcula a distância de Manhattan entre a posição atual e o objetivo    
-        return abs(self.target_line - self.cur_line) + abs(self.target_col - self.cur_col)
-    
     def is_solved(self) -> bool:
     # Verifica se o labirinto foi resolvido (todas as posições visitadas e o objetivo alcançado)    
         return np.prod(self.maze) != 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
@@ -194,11 +191,8 @@ class TreeNode:
         child_node.parent = self
     
 
-#bfs, iterative deepening, a*, greedy(?)
-#is solvable
-
 #DFS
-def depth_first_search(initial_maze, is_solved, children):
+def depth_first_search(initial_maze):
     root = TreeNode(initial_maze)   # create the root node in the search tree
     queue = deque([root])   # initialize the queue to store the nodes
     visited = set([initial_maze])
@@ -238,7 +232,7 @@ def depth_limited_search(initial_maze, depth_limit):
             node=tuple[0]
             maze=node.maze
             if maze.is_solved():   #ver se ja esta resolvido
-                return True
+                return maze
         
             for child in maze.children():
             #se nao esta visitado ent visitmos
@@ -256,16 +250,124 @@ def depth_limited_search(initial_maze, depth_limit):
 def iterative_deepening_search(initial_maze, depth_limit):
     depth=0
     result=None
-    while result!=True:
+    while result==None:
         if depth<depth_limit:
             depth+=1
         result = depth_limited_search(initial_maze,depth)
-    return (result, depth)
+    return (print_sequence(result), depth)
 
+#BFS
+def breadth_first_search(initial_maze):
+    root = TreeNode(initial_maze)  
+    queue = deque([root])  
+    
+    while queue:
+        node = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
+        maze=node.maze
+        if maze.is_solved():   # ver se ja esta completo
+            return print_sequence(maze)
+        
+        for child in maze.children():   # ver as children deste nó
+            # criar um no novo encontrado
+            child_node=TreeNode(maze=child, parent=node)
+            #adicionar esse no aos filhos do meu no atual
+            node.add_child(child_node)
+            #po-lo na fila
+            queue.append(child_node)        
+    return None
+
+
+#Heuristicas
+
+def heuristica1(maze): # Distância Euclidiana
+    # Obtenção das coordenadas atuais do agente no labirinto
+    x0 = maze.cur_line
+    y0 = maze.cur_col
+    # Inicialização do valor com infinito e a posição atual
+    value = (float('inf'), (x0, y0))
+    # Obtenção das coordenadas do alvo no labirinto
+    x1 = maze.target_line
+    y1 = maze.target_col
+    
+    # Verificação e cálculo da distância para baixo, se possível
+    if x0 >= 0 and x0 < maze.lines - 1 and maze.maze[x0+1,y0]==0:
+        dist = distancia_euleriana(x0 + 1, y0, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    # Verificação e cálculo da distância para cima, se possível
+    elif x0 > 0 and x0 <= maze.lines - 1 and maze.maze[x0-1,y0]==0:
+        dist = distancia_euleriana(x0 - 1, y0, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    
+    # Verificação e cálculo da distância para direita, se possível
+    if y0 >= 0 and y0 < maze.columns - 1 and maze.maze[x0,y0+1]==0:
+        dist = distancia_euleriana(x0, y0 + 1, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    # Verificação e cálculo da distância para esquerda, se possível
+    elif y0 > 0 and y0 <= maze.columns - 1 and maze.maze[x0,y0-1]==0:
+        dist = value[0], distancia_euleriana(x0, y0 - 1, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    
+    return value
+
+def distancia_euleriana(x, y, z, w) -> float:
+    # Cálculo da distância Euclidiana entre dois pontos
+    return (math.sqrt((x - z) ** 2 + (y - w) ** 2), (x, y))
+
+
+def heuristica2(maze): #distancia Manhattan (distancia usando apenas movimentos na matriz)
+    x0=maze.cur_line
+    y0=maze.cur_col
+    value=(float('inf'),(x0,y0))
+    x1=maze.target_line
+    y1=maze.target_col
+    # Verificação e cálculo da distância para baixo, se possível
+    if x0 >= 0 and x0 < maze.lines - 1 and maze.maze[x0+1,y0]==0:
+        dist = distancia_manhattan(x0 + 1, y0, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    # Verificação e cálculo da distância para cima, se possível
+    elif x0 > 0 and x0 <= maze.lines - 1 and maze.maze[x0-1,y0]==0:
+        dist = distancia_manhattan(x0 - 1, y0, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    
+    # Verificação e cálculo da distância para direita, se possível
+    if y0 >= 0 and y0 < maze.columns - 1 and maze.maze[x0,y0+1]==0:
+        dist = distancia_manhattan(x0, y0 + 1, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    # Verificação e cálculo da distância para esquerda, se possível
+    elif y0 > 0 and y0 <= maze.columns - 1 and maze.maze[x0,y0-1]==0:
+        dist = value[0], distancia_manhattan(x0, y0 - 1, x1, y1)
+        if dist[0] < value[0]:
+            value = dist
+    return value
+
+def distancia_manhattan(x,y,z,w) -> int:
+    # Calcula a distância de Manhattan entre a posição atual e o objetivo    
+        return (abs(z - x) + abs(w - y),(x,y))
+
+
+#Interface jogdor usar com ajuda de AI e AI resolver sozinha
+
+
+
+#Testar código
 maze = Maze(np.zeros((4,4)), [], obstacle= [])
 
 maze_teste=Maze(np.zeros((4,4)),[],obstacle=[(0,0), (1,3), (0,1)])
-print(maze_teste)
+#print(maze_teste)
 
 #depth_limited_search(maze_teste,12)
-print(iterative_deepening_search(maze_teste, 14))
+#iterative_deepening_search(maze_teste, 14)
+#breadth_first_search(maze_teste)
+
+maze_teste_heuristicas=Maze(np.zeros((4,4)),[],(3,0),obstacle=[(0,0), (1,3), (0,1)])
+print(maze_teste_heuristicas)
+
+print(heuristica2(maze_teste_heuristicas))
+
