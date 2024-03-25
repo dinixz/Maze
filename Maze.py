@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from copy import deepcopy
+from collections import deque
 
 '''
     Maze é uma array numpy para ser mais eficiente que uma lista
@@ -55,6 +56,35 @@ class Maze:
         #permite usar o estado do labirinto em um conjunto (set)
         return hash(str([item for sublist in self.maze for item in sublist]))
     
+    def is_solvable(self,line,col) -> bool:
+        for i in range(self.lines):
+            for j in range(self.columns):
+                counter = 0
+
+                if i == line and j == col:  # Skip checking the target cell
+                    continue
+
+                if i==0:
+                    counter +=1
+                if j==0:
+                    counter +=1
+                if i==self.lines-1:
+                    counter +=1
+                if j==self.columns-1:
+                    counter +=1
+
+                if i > 0 and (self.maze[i - 1][j] == -1 or (i - 1 == line and j == col)):  # Check above cell
+                    counter += 1
+                if j > 0 and (self.maze[i][j - 1] == -1 or (i == line and j - 1 == col)):  # Check left cell
+                    counter += 1
+                if i < self.lines - 1 and (self.maze[i + 1][j] == -1 or (i + 1 == line and j == col)):  # Check below cell
+                    counter += 1
+                if j < self.columns - 1 and (self.maze[i][j + 1] == -1 or (i == line and j + 1 == col)):  # Check right cell
+                    counter += 1
+                if counter > 2:
+                    return False
+        return True
+    
     def generate_obstacles(self, obstacles: list) -> None:
         if len(obstacles) == 0:  #se não for dado nenhum obstaculo gera-se aleatórios (corre o risco de ser impossível encontrar soluçao)
             list_lines = list(range(self.lines))
@@ -63,11 +93,14 @@ class Maze:
                 line = random.choice(list_lines)
                 col = random.choice(list_cols)
                 # Verifica se o obstáculo não está nas posições do agente ou do objetivo
-                if [line, col] != [self.target_line, self.target_col] and [line, col] != [self.cur_line, self.cur_col]:
+                #verifica se os obstaculos nao tornam o puzzle impossivel, todas as posicoes têm 2 saidas
+                if [line, col] != [self.target_line, self.target_col] and [line, col] != [self.cur_line, self.cur_col] and self.is_solvable(line,col):
                     self.maze[line, col] = -1
         else:  #se obstáculos forem fornecidos, usa essas posições
             for line, col in obstacles:
                 self.maze[line, col] = -1
+    
+   
     
     def children(self) -> list:
         # Gera os filhos possíveis do estado atual do labirinto
@@ -148,9 +181,91 @@ def print_sequence(node:Maze):
     for maze in node.move_history:
         print(maze)
         print()
+
+
+class TreeNode:
+    def __init__(self, maze, parent=None):
+        self.maze = maze
+        self.parent = parent
+        self.children = []
+
+    def add_child(self, child_node):
+        self.children.append(child_node)
+        child_node.parent = self
     
-maze = Maze(np.zeros((3,3)), [], obstacle= [])
-print(maze)
 
 #bfs, iterative deepening, a*, greedy(?)
 #is solvable
+
+#DFS
+def depth_first_search(initial_maze, is_solved, children):
+    root = TreeNode(initial_maze)   # create the root node in the search tree
+    queue = deque([root])   # initialize the queue to store the nodes
+    visited = set([initial_maze])
+    
+    while queue:
+        node = queue.pop()   # get first element in the queue
+        maze=node.maze
+        if maze.is_solved():   # check goal state
+            return print_sequence(node.maze)
+        
+        for child in maze.children():
+            #se nao esta visitado ent visitmos
+            if child not in visited:
+                # criar no usando o estdo novo encontrado
+                child_node=TreeNode(maze=child, parent=node)
+                #adicionar esse no aos filhos do meu no atual
+                node.add_child(child_node)
+                #po-lo na fila
+                queue.append(child_node)
+                visited.add(child)
+            #se ja tiver sido visitado n vamos andar as voltas a criar arvore que ja existe antes
+            
+
+    return print_sequence(None)
+
+#Limited DFS
+def depth_limited_search(initial_maze, depth_limit):
+    root = TreeNode(initial_maze)   # create the root node in the search tree
+    queue = deque([(root,0)])   # initialize the queue to store the nodes
+    visited = set([initial_maze])
+    
+    while queue:
+        tuple = queue.pop()# get first element in the queue
+        if tuple[1]>depth_limit:
+            return None
+        else:
+            node=tuple[0]
+            maze=node.maze
+            if maze.is_solved():   #ver se ja esta resolvido
+                return True
+        
+            for child in maze.children():
+            #se nao esta visitado ent visitmos
+                if child not in visited:
+                # criar no usando o estdo novo encontrado
+                    child_node=TreeNode(maze=child, parent=node)
+                #adicionar esse no aos filhos do meu no atual
+                    node.add_child(child_node)
+                #po-lo na fila
+                    queue.append((child_node,tuple[1]+1))
+                    visited.add(child)
+            #se ja tiver sido visitado n vamos andar as voltas a criar arvore que ja existe antes
+    return None
+
+def iterative_deepening_search(initial_maze, depth_limit):
+    depth=0
+    result=None
+    while result!=True:
+        if depth<depth_limit:
+            depth+=1
+        result = depth_limited_search(initial_maze,depth)
+    return (result, depth)
+
+maze = Maze(np.zeros((4,4)), [], obstacle= [])
+
+maze_teste=Maze(np.zeros((4,4)),[],obstacle=[(0,0), (1,3), (0,1)])
+print(maze_teste)
+
+#depth_limited_search(maze_teste,12)
+print(iterative_deepening_search(maze_teste, 14))
