@@ -2,9 +2,7 @@ import numpy as np
 import random
 import math
 from copy import deepcopy
-from collections import deque
-from algorithms import *
-from heuristics import *
+
 
 '''
     Maze é uma array numpy para ser mais eficiente que uma lista
@@ -103,8 +101,6 @@ class Maze:
             for line, col in obstacles:
                 self.maze[line, col] = -1
     
-   
-    
     def children(self) -> list:
         # Gera os filhos possíveis do estado atual do labirinto
         functions = [self.up, self.down, self.left, self.right]  #lista de funções de movimento
@@ -180,23 +176,4 @@ def print_sequence(node:Maze):
     for maze in node.move_history:
         print(maze)
         print()
-
-#Interface jogdor usar com ajuda de AI e AI resolver sozinha
-
-
-
-#Testar código
-maze = Maze(np.zeros((4,4)), [], obstacle= [])
-
-maze_teste=Maze(np.zeros((4,4)),[],obstacle=[(0,0), (1,3), (0,1)])
-#print(maze_teste)
-
-#depth_limited_search(maze_teste,12)
-#iterative_deepening_search(maze_teste, 14)
-#breadth_first_search(maze_teste)
-
-maze_teste_heuristicas=Maze(np.zeros((4,4)),[],(3,0),obstacle=[(0,0), (1,3), (0,1)])
-print(maze_teste_heuristicas)
-
-print(heuristica2(maze_teste_heuristicas))
 
