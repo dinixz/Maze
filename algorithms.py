@@ -2,17 +2,7 @@ from Maze import Maze, print_sequence
 from copy import deepcopy
 from collections import deque
 import numpy as np
-
-class TreeNode:
-    def __init__(self, maze, parent=None):
-        self.maze = maze
-        self.parent = parent
-        self.children = []
-
-    def add_child(self, child_node):
-        self.children.append(child_node)
-        child_node.parent = self
-    
+  
 #DFS
 def depth_first_search(initial_maze:Maze):
     stack = deque([initial_maze]) 
@@ -32,35 +22,7 @@ def depth_first_search(initial_maze:Maze):
     return print_sequence(None)
 
 #Limited DFS
-def depth_limited_search(initial_maze, depth_limit):
-    root = TreeNode(initial_maze)   # create the root node in the search tree
-    queue = deque([(root,0)])   # initialize the queue to store the nodes
-    visited = set([initial_maze])
-    
-    while queue:
-        tuple = queue.pop()# get first element in the queue
-        if tuple[1]>depth_limit:
-            return None
-        else:
-            node=tuple[0]
-            maze=node.maze
-            if maze.is_solved():   #ver se ja esta resolvido
-                return maze
-        
-            for child in maze.children():
-            #se nao esta visitado ent visitmos
-                if child not in visited:
-                # criar no usando o estdo novo encontrado
-                    child_node=TreeNode(maze=child, parent=node)
-                #adicionar esse no aos filhos do meu no atual
-                    node.add_child(child_node)
-                #po-lo na fila
-                    queue.append((child_node,tuple[1]+1))
-                    visited.add(child)
-            #se ja tiver sido visitado n vamos andar as voltas a criar arvore que ja existe antes
-    return None
-
-def depth_limited_search2(initial_maze:Maze, depth_limit:int): #acho que está melhor (????)
+def depth_limited_search(initial_maze:Maze, depth_limit:int):
     stack = deque([(initial_maze, 0)])  
     visited = set()
     
@@ -84,24 +46,17 @@ def iterative_deepening_search(initial_maze, depth_limit):
         if depth<depth_limit:
             depth+=1
         result = depth_limited_search(initial_maze,depth)
-    return (print_sequence(result), depth)
+    return None
 
 #BFS
 def breadth_first_search(initial_maze):
-    root = TreeNode(initial_maze)  
-    queue = deque([root])  
+    queue = deque([initial_maze])  
     
     while queue:
-        node = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
-        maze=node.maze
+        maze = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
         if maze.is_solved():   # ver se ja esta completo
             return print_sequence(maze)
         
         for child in maze.children():   # ver as children deste nó
-            # criar um no novo encontrado
-            child_node=TreeNode(maze=child, parent=node)
-            #adicionar esse no aos filhos do meu no atual
-            node.add_child(child_node)
-            #po-lo na fila
-            queue.append(child_node)        
+            queue.append(child)        
     return None
