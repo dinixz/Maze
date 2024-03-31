@@ -2,6 +2,7 @@ from Maze import Maze, print_sequence
 from copy import deepcopy
 from collections import deque
 import numpy as np
+import heapq
   
 #DFS
 def depth_first_search(initial_maze:Maze):
@@ -60,3 +61,32 @@ def breadth_first_search(initial_maze):
         for child in maze.children():   # ver as children deste nó
             queue.append(child)        
     return None
+
+#Greedy
+def greedy_search(maze_inicial, heuristica):
+    # Define um método de comparação para os mazes com base na função heurística fornecida
+    setattr(maze_inicial, "__lt__", lambda self, other: heuristica(self) < heuristica(other))
+    
+    # Inicializa uma lista para armazenar os labirintos a serem explorados
+    fila = [maze_inicial]
+    # Inicializa um conjunto para manter o controle dos estados visitados e evitar revisitá-los
+    visitados = set()
+    
+    while fila:
+        # Retira o maze com o MENOR valor heurístico da fila de prioridade
+        atual = heapq.heappop(fila)
+        
+        visitados.add(atual) #labirinto visitado
+        
+        if atual.is_solved(): #se o problema está resolvido
+            return print_sequence(atual)
+        
+        # Gera os mazes filhos a partir do atual
+        for filho in atual.children():
+            if filho not in visitados:
+                heapq.heappush(fila, filho)
+
+    return None
+
+def a_star_search(maze_inicial, heuristica):
+        return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
