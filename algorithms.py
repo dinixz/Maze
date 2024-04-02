@@ -90,3 +90,6 @@ def greedy_search(maze_inicial, heuristica):
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
+
+def  weighted_a_star_search(maze_inicial, heuristica, w):
+        return greedy_search(maze_inicial, lambda hrst: w*heuristica(maze_inicial) + len(maze_inicial.move_history) - 1)
