@@ -14,11 +14,12 @@ def min_distance_from_zeros(maze:Maze) -> int:
     sum=0
     for i in range(maze.lines):
         for j in range(maze.columns):
-            if maze.maze[i, j] == 0: #celulas ainda nao visitadas
-                    sum+=abs(maze.target_line - i) + abs(maze.target_col - j)
+            if maze.maze[i, j] == None: #celulas ainda nao visitadas
+                    sum += abs(maze.target_line - i) + abs(maze.target_col - j)
     return sum
 
-# maze = Maze(np.zeros((2,2)), [])
+# maze = Maze(2,2)
 # print(maze)
-# print(maze.cur_line, maze.cur_col)
 # print(distancia_manhattan(maze))
+# print(distancia_euclidiana(maze))
+# print(min_distance_from_zeros(maze))

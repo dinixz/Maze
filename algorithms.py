@@ -3,6 +3,7 @@ from copy import deepcopy
 from collections import deque
 import numpy as np
 import heapq
+from heuristics import *
   
 #DFS
 def depth_first_search(initial_maze:Maze):
@@ -22,6 +23,9 @@ def depth_first_search(initial_maze:Maze):
                 
     return print_sequence(None)
 
+# maze = Maze(3,3)
+# depth_first_search(maze)
+
 #Limited DFS
 def depth_limited_search(initial_maze:Maze, depth_limit:int):
     stack = deque([(initial_maze, 0)])  
@@ -39,6 +43,7 @@ def depth_limited_search(initial_maze:Maze, depth_limit:int):
                     stack.append([child, depth + 1])
     return None
 
+# maze = Maze(6,6, obstacle=[(0,0), (0,1), (0,2)])
 
 def iterative_deepening_search(initial_maze, depth_limit):
     depth=0
@@ -48,6 +53,8 @@ def iterative_deepening_search(initial_maze, depth_limit):
             depth+=1
         result = depth_limited_search(initial_maze,depth)
     return None
+
+# maze = Maze(6,6, obstacle=[(0,0), (0,1), (0,2)])
 
 #BFS
 def breadth_first_search(initial_maze):
@@ -61,6 +68,9 @@ def breadth_first_search(initial_maze):
         for child in maze.children():   # ver as children deste nó
             queue.append(child)        
     return None
+
+# maze = Maze(3,3)
+# depth_first_search(maze)
 
 #Greedy
 def greedy_search(maze_inicial, heuristica):
@@ -87,6 +97,9 @@ def greedy_search(maze_inicial, heuristica):
                 heapq.heappush(fila, filho)
 
     return None
+
+maze = Maze(4,4)
+greedy_search(maze, distancia_euclidiana)
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial

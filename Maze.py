@@ -3,51 +3,48 @@ import random
 import math
 from copy import deepcopy
 
-
-'''
-    Maze é uma array numpy para ser mais eficiente que uma lista
-    As entradas são:
-        -1 -> obstáculos
-        0 -> espaços livres
-        1 -> espaços já percorridos
-        2 -> meta a que temos de chegar
-    O atributo cur_line e cur_col ao gerar o labirinto são a linha e coluna iniciais
-    Depois do primeiro move são onde se situa o nosso "agente"
-    A função generate_obstacles quando não são dadas as posições dos obstaculos por vezes gera obstaculos que impedem de haver solução para o labirinto
-'''
+obstaculo = "#"
+atual = "\x1b[32mX\x1b[0m"
+objetivo = "\x1b[34mO\x1b[0m"
 
 class Maze:
-    def __init__(self, maze: np.array, move_history=[], cur=None, obstacle=None) -> None:
-        self.maze = deepcopy(maze)  #cópia da matriz do labirinto para evitar alterações inesperadas
-        self.lines, self.columns = maze.shape  #número de linhas e colunas do labirinto
-        self.move_history = [] + move_history + [self]  #registro dos movimentos realizados no labirinto
+    def __init__(self, lines, columns, cur=None, obstacle=None, cur_move=None) -> None:
+        self.maze = np.empty((lines, columns), dtype= 'object')  
+        self.lines, self.columns = (lines, columns)
         
-        #atualiza a posição atual 
+        self.last_move = ['last', 1]
+        self.cur_move = ['cur', 0]
+        
+        #ATUAL
         if cur is not None: #se já se tiver feito algum movimento
             self.cur_line, self.cur_col = cur
         else: #para iniciar o labirinto
             self.cur_line = self.lines - 1 
             self.cur_col = 0 
-        self.maze[self.cur_line, self.cur_col] = 1  
+        self.maze[self.cur_line, self.cur_col] = atual
         
-        #posição de objetivo 
+        #TARGET
         self.target_line = 0
         self.target_col = self.columns - 1
-        self.maze[self.target_line, self.target_col] = 2
-        
+        self.maze[self.target_line, self.target_col] = objetivo
         #se obstacle != None gera-se obstaculos
         if isinstance(obstacle, list):
             self.generate_obstacles(obstacle)
+            
+        self.move_history = [self.copy()]
         
     def __str__(self) -> str:
-        string = ''
+        string = '+' + '-'*(2*self.columns - 1) + '+ \n'
         for line in self.maze:
+            string += '|'
             for cell in line:
-                if cell == -1:
-                    string += '#'
+                if cell is None:
+                    string += ' '
                 else:
-                    string += str(int(cell))
+                    string += cell
+                string += '|'
             string += '\n'
+            string += '+' + '-'*(2*self.columns - 1) + '+ \n'
         return string
     
     def __eq__(self, other: object) -> bool:
@@ -56,6 +53,10 @@ class Maze:
     def __hash__(self):
         #permite usar o estado do labirinto em um conjunto (set)
         return hash(str([item for sublist in self.maze for item in sublist]))
+    
+    def copy(self):
+        maze_copy = deepcopy(self)
+        return maze_copy
     
     def is_solvable(self,line,col) -> bool:
         for i in range(self.lines):
@@ -74,98 +75,115 @@ class Maze:
                 if j==self.columns-1:
                     counter +=1
 
-                if i > 0 and (self.maze[i - 1][j] == -1 or (i - 1 == line and j == col)):  # Check above cell
+                if i > 0 and (self.maze[i - 1][j] == obstaculo or (i - 1 == line and j == col)):  # Check above cell
                     counter += 1
-                if j > 0 and (self.maze[i][j - 1] == -1 or (i == line and j - 1 == col)):  # Check left cell
+                if j > 0 and (self.maze[i][j - 1] == obstaculo or (i == line and j - 1 == col)):  # Check left cell
                     counter += 1
-                if i < self.lines - 1 and (self.maze[i + 1][j] == -1 or (i + 1 == line and j == col)):  # Check below cell
+                if i < self.lines - 1 and (self.maze[i + 1][j] == obstaculo or (i + 1 == line and j == col)):  # Check below cell
                     counter += 1
-                if j < self.columns - 1 and (self.maze[i][j + 1] == -1 or (i == line and j + 1 == col)):  # Check right cell
+                if j < self.columns - 1 and (self.maze[i][j + 1] == obstaculo or (i == line and j + 1 == col)):  # Check right cell
                     counter += 1
                 if counter > 2:
                     return False
         return True
     
     def generate_obstacles(self, obstacles: list) -> None:
-        if len(obstacles) == 0:  #se não for dado nenhum obstaculo gera-se aleatórios (corre o risco de ser impossível encontrar soluçao)
+        if len(obstacles) == 0:  
             list_lines = list(range(self.lines))
             list_cols = list(range(self.columns))
-            for _ in range(min(self.columns - 1, self.lines - 1)): #para não haver uma linha de obstaculos que divide a pos inicial da final
+            for _ in range(min(self.columns - 1, self.lines - 1)): 
                 line = random.choice(list_lines)
                 col = random.choice(list_cols)
-                # Verifica se o obstáculo não está nas posições do agente ou do objetivo
-                #verifica se os obstaculos nao tornam o puzzle impossivel, todas as posicoes têm 2 saidas
+
                 if [line, col] != [self.target_line, self.target_col] and [line, col] != [self.cur_line, self.cur_col] and self.is_solvable(line,col):
-                    self.maze[line, col] = -1
-        else:  #se obstáculos forem fornecidos, usa essas posições
+                    self.maze[line, col] = obstaculo
+        else: 
             for line, col in obstacles:
-                self.maze[line, col] = -1
+                self.maze[line, col] = obstaculo
     
     def children(self) -> list:
-        # Gera os filhos possíveis do estado atual do labirinto
-        functions = [self.up, self.down, self.left, self.right]  #lista de funções de movimento
+        functions = [self.up, self.down, self.left, self.right]
         children = []
         for function in functions:
-            child = function()  #aplica cada função de movimento
+            child = function()
             if child:
-                children.append(child)  #adiciona o filho se o movimento for válido
+                child.move_history += [deepcopy(child)]
+                children.append(child)
         return children
     
     def move(func):
-    #decorador para lidar com movimentos    
         def wrapper(self):
-            maze = Maze(self.maze, self.move_history, (self.cur_line, self.cur_col))  #cópia do labirinto
-            done = func(maze)  #função de movimento
+            maze = self.copy()
+            done = func(maze)  
             if done:
-                return maze  #retorna o labirinto modificado se o movimento for bem-sucedido
+                return maze  
             else:
-                return None  #retorna None se o movimento for inválido
+                return None  
         return wrapper
     
     # Funções de movimento
     @move
     def up(self) -> bool:
-        # Verifica se o movimento para cima é válido
-        if self.cur_line == 0 or self.maze[self.cur_line - 1, self.cur_col] in {-1, 1} or (self.maze[self.cur_line - 1, self.cur_col] == 2 and np.count_nonzero(self.maze == 0) > 0):
+        if self.cur_line == 0 or self.maze[self.cur_line - 1, self.cur_col] not in {None, objetivo} or (self.maze[self.cur_line - 1, self.cur_col] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'up' and self.cur_move[1] == self.last_move[1]):
             return False
-        # Move o agente para cima e atualiza a posição no labirinto
-        self.maze[self.cur_line - 1, self.cur_col] = 1
+
+        self.maze[self.cur_line, self.cur_col] = "↑"
+        self.maze[self.cur_line - 1, self.cur_col] = atual
         self.cur_line -= 1
+        
+        if self.cur_move[0] == 'up': self.cur_move[1] += 1
+        else: 
+            self.last_move = self.cur_move
+            self.cur_move = ['up', 1]
         return True
     
     @move
     def down(self) -> bool:
-        # Verifica se o movimento para baixo é válido
-        if self.cur_line == self.lines - 1 or self.maze[self.cur_line + 1, self.cur_col] in {-1, 1} or (self.maze[self.cur_line + 1, self.cur_col] == 2 and np.count_nonzero(self.maze == 0) > 0):
+        if self.cur_line == self.lines - 1 or self.maze[self.cur_line + 1, self.cur_col] not in {None, objetivo} or (self.maze[self.cur_line + 1, self.cur_col] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'down' and self.cur_move[1] == self.last_move[1]):
             return False
-        # Move o agente para baixo e atualiza a posição no labirinto
-        self.maze[self.cur_line + 1, self.cur_col] = 1
+
+        self.maze[self.cur_line, self.cur_col] = '↓'
+        self.maze[self.cur_line + 1, self.cur_col] = atual
         self.cur_line += 1
+        
+        if self.cur_move[0] == 'down': self.cur_move[1] += 1
+        else: 
+            self.last_move = self.cur_move
+            self.cur_move = ['down', 1]
         return True
     
     @move
     def left(self) -> bool:
-        # Verifica se o movimento para a esquerda é válido
-        if self.cur_col == 0 or self.maze[self.cur_line, self.cur_col - 1] in {-1, 1} or (self.maze[self.cur_line, self.cur_col - 1] == 2 and np.count_nonzero(self.maze == 0) > 0):
+        if self.cur_col == 0 or self.maze[self.cur_line, self.cur_col - 1] not in {None, objetivo} or (self.maze[self.cur_line, self.cur_col - 1] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'left' and self.cur_move[1] == self.last_move[1]):
             return False
-        # Move o agente para a esquerda e atualiza a posição no labirinto
-        self.maze[self.cur_line, self.cur_col - 1] = 1
+
+        self.maze[self.cur_line, self.cur_col] = '←'
+        self.maze[self.cur_line, self.cur_col - 1] = atual
         self.cur_col -= 1
+        
+        if self.cur_move[0] == 'left': self.cur_move[1] += 1
+        else: 
+            self.last_move = self.cur_move
+            self.cur_move = ['left', 1]
         return True
     
     @move
     def right(self) -> bool:
-        # Verifica se o movimento para a direita é válido
-        if self.cur_col == self.columns - 1 or self.maze[self.cur_line, self.cur_col + 1] in {-1, 1} or (self.maze[self.cur_line, self.cur_col + 1] == 2 and np.count_nonzero(self.maze == 0) > 0):
+        if self.cur_col == self.columns - 1 or self.maze[self.cur_line, self.cur_col + 1] not in {None, objetivo} or (self.maze[self.cur_line, self.cur_col + 1] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'right' and self.cur_move[1] == self.last_move[1]):
             return False
-        # Move o agente para a direita e atualiza a posição no labirinto
-        self.maze[self.cur_line, self.cur_col + 1] = 1
+
+        self.maze[self.cur_line, self.cur_col] = '→'
+        self.maze[self.cur_line, self.cur_col + 1] = atual
         self.cur_col += 1
+        
+        if self.cur_move[0] == 'right': self.cur_move[1] += 1
+        else: 
+            self.last_move = self.cur_move
+            self.cur_move = ['right', 1]
         return True
     
-    def is_solved(self) -> bool:
-    # Verifica se o labirinto foi resolvido (todas as posições visitadas e o objetivo alcançado)    
-        return np.prod(self.maze) != 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
+    def is_solved(self) -> bool: 
+        return np.sum(self.maze == 0) == 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
 
 def print_sequence(node:Maze):
     if node is None:
@@ -176,4 +194,14 @@ def print_sequence(node:Maze):
     for maze in node.move_history:
         print(maze)
         print()
+
+# maze = Maze(4,4)
+# print(maze)
+# maze.children()
+# maze = maze.children()[0]
+# maze = maze.children()[0]
+# maze = maze.children()[1]
+# maze = maze.children()[2]
+# for child in maze.children():
+#     print(child)
 
