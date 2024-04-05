@@ -195,13 +195,10 @@ def print_sequence(node:Maze):
         print(maze)
         print()
 
-# maze = Maze(4,4)
+# maze = Maze(4,4, obstacle=[(2,2)])
 # print(maze)
-# maze.children()
 # maze = maze.children()[0]
 # maze = maze.children()[0]
 # maze = maze.children()[1]
 # maze = maze.children()[2]
-# for child in maze.children():
-#     print(child)
-
+# print(maze)

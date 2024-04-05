@@ -1,10 +1,45 @@
 from Maze import Maze, print_sequence
-from copy import deepcopy
 from collections import deque
-import numpy as np
 import heapq
 from heuristics import *
+import time
   
+easy_mazes = [
+    Maze(3,3),
+    Maze(6,6, obstacle= [(0,0), (0,1), (0,2)]),
+    Maze(6,6, obstacle= [(3,1), (3,2), (1,5)]),
+    Maze(6,6, obstacle= [(4,1), (5,1), (1,3)]),
+    Maze(6,6, obstacle= [(2,2), (4,3), (5,3)]),
+    Maze(6,6, obstacle= [(0,4)]),
+    Maze(6,6, obstacle= [(3,1), (4,3), (4,4)])
+]
+
+medium_mazes = [
+    Maze(5,8, obstacle= [(2,0), (3,0), (0,6), (1,6)]),
+    Maze(5,8, obstacle= [(1,1), (2,1), (4,6), (4,7)]),
+    Maze(5,8, obstacle= [(0,0), (0,1), (0,2), (4,1)]),
+    Maze(5,8, obstacle= [(0,0), (0,1), (4,6), (4,7)]),
+    Maze(5,8, obstacle= [(0,6), (1,6), (2,4), (3,4)]),
+    Maze(5,8, obstacle= [(0,2), (1,2), (2,4), (3,4)]),
+    Maze(5,8, obstacle= [(1,3), (1,4), (1,5), (3,4)]),
+    Maze(5,8, obstacle= [(0,2), (0,3)])
+]
+
+hard_mazes = [
+    Maze(7,7, obstacle= [(0,3), (1,1)]),
+    Maze(7,7, obstacle= [(6,1), (5,3), (3,3), (3,4)]),
+    Maze(7,7, obstacle= [(2,0), (2,1), (5,0), (5,1)]),
+    Maze(7,7, obstacle= [(2,0), (3,0), (3,2), (4,2)]),
+    Maze(7,7, obstacle= [(2,5), (3,3), (6,5), (6,6)]),
+    Maze(7,7, obstacle= [(1,1), (1,2), (3,3), (4,1)]),
+    Maze(7,7, obstacle= [(3,3), (4,3), (3,6), (4,6)]),
+    Maze(7,7, obstacle= [(4,1), (4,2), (5,6), (6,6)]),
+    Maze(7,7, obstacle= [(3,1), (4,1), (3,6), (4,6)]),
+    Maze(7,7, obstacle= [(6,1), (4,2), (4,4), (3,4)]),
+    Maze(7,7, obstacle= [(4,2), (5,2), (4,5), (5,5)]),
+    Maze(7,7, obstacle= [(6,1), (6,2), (1,6), (2,4)])
+]
+
 #DFS
 def depth_first_search(initial_maze:Maze):
     stack = deque([initial_maze]) 
@@ -23,8 +58,12 @@ def depth_first_search(initial_maze:Maze):
                 
     return print_sequence(None)
 
-# maze = Maze(3,3)
-# depth_first_search(maze)
+# for maze in easy_mazes:
+#     inicio = time.time()
+#     depth_first_search(maze)
+#     print('\n ' + str(time.time() - inicio) + '\n')
+#     print('------------------------')
+
 
 #Limited DFS
 def depth_limited_search(initial_maze:Maze, depth_limit:int):
@@ -69,8 +108,11 @@ def breadth_first_search(initial_maze):
             queue.append(child)        
     return None
 
-# maze = Maze(3,3)
-# depth_first_search(maze)
+for maze in easy_mazes:
+    inicio = time.time()
+    breadth_first_search(maze)
+    print('\n ' + str(time.time() - inicio) + '\n')
+    print('------------------------')
 
 #Greedy
 def greedy_search(maze_inicial, heuristica):
@@ -98,8 +140,8 @@ def greedy_search(maze_inicial, heuristica):
 
     return None
 
-maze = Maze(4,4)
-greedy_search(maze, distancia_euclidiana)
+# maze = Maze(4,4)
+# greedy_search(maze, distancia_euclidiana)
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
