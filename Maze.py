@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import math
 from copy import deepcopy
 
 obstaculo = "#"
@@ -8,25 +7,23 @@ atual = "\x1b[32mX\x1b[0m"
 objetivo = "\x1b[34mO\x1b[0m"
 
 class Maze:
-    def __init__(self, lines, columns, cur=None, obstacle=None, cur_move=None) -> None:
-        self.maze = np.empty((lines, columns), dtype= 'object')  
+    def __init__(self, lines:int, columns:int, obstacle=None) -> None:
+        self.maze = np.empty((lines, columns), dtype= 'object') 
         self.lines, self.columns = (lines, columns)
         
         self.last_move = ['last', 1]
         self.cur_move = ['cur', 0]
         
         #ATUAL
-        if cur is not None: #se já se tiver feito algum movimento
-            self.cur_line, self.cur_col = cur
-        else: #para iniciar o labirinto
-            self.cur_line = self.lines - 1 
-            self.cur_col = 0 
+        self.cur_line = self.lines - 1 
+        self.cur_col = 0 
         self.maze[self.cur_line, self.cur_col] = atual
         
         #TARGET
         self.target_line = 0
         self.target_col = self.columns - 1
         self.maze[self.target_line, self.target_col] = objetivo
+        
         #se obstacle != None gera-se obstaculos
         if isinstance(obstacle, list):
             self.generate_obstacles(obstacle)
@@ -47,7 +44,7 @@ class Maze:
             string += '+' + '-'*(2*self.columns - 1) + '+ \n'
         return string
     
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other:object) -> bool:
         return np.array_equal(self.maze, other) 
     
     def __hash__(self):
@@ -58,7 +55,7 @@ class Maze:
         maze_copy = deepcopy(self)
         return maze_copy
     
-    def is_solvable(self,line,col) -> bool:
+    def is_solvable(self, line:int, col:int) -> bool:
         for i in range(self.lines):
             for j in range(self.columns):
                 counter = 0
@@ -87,7 +84,7 @@ class Maze:
                     return False
         return True
     
-    def generate_obstacles(self, obstacles: list) -> None:
+    def generate_obstacles(self, obstacles:list) -> None:
         if len(obstacles) == 0:  
             list_lines = list(range(self.lines))
             list_cols = list(range(self.columns))
@@ -107,7 +104,6 @@ class Maze:
         for function in functions:
             child = function()
             if child:
-                child.move_history += [deepcopy(child)]
                 children.append(child)
         return children
     
@@ -135,6 +131,8 @@ class Maze:
         else: 
             self.last_move = self.cur_move
             self.cur_move = ['up', 1]
+            
+        self.move_history += [deepcopy(self)]
         return True
     
     @move
@@ -150,6 +148,8 @@ class Maze:
         else: 
             self.last_move = self.cur_move
             self.cur_move = ['down', 1]
+            
+        self.move_history += [deepcopy(self)]
         return True
     
     @move
@@ -165,6 +165,8 @@ class Maze:
         else: 
             self.last_move = self.cur_move
             self.cur_move = ['left', 1]
+            
+        self.move_history += [deepcopy(self)]
         return True
     
     @move
@@ -180,12 +182,14 @@ class Maze:
         else: 
             self.last_move = self.cur_move
             self.cur_move = ['right', 1]
+            
+        self.move_history += [deepcopy(self)]
         return True
     
     def is_solved(self) -> bool: 
         return np.sum(self.maze == 0) == 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
 
-def print_sequence(node:Maze):
+def print_sequence(node=None):
     if node is None:
         print('There is no solution')
         return
@@ -193,7 +197,7 @@ def print_sequence(node:Maze):
     # prints the sequence of states
     for maze in node.move_history:
         print(maze)
-        print()
+
 
 # maze = Maze(4,4, obstacle=[(2,2)])
 # print(maze)
@@ -201,4 +205,4 @@ def print_sequence(node:Maze):
 # maze = maze.children()[0]
 # maze = maze.children()[1]
 # maze = maze.children()[2]
-# print(maze)
+# print_sequence(maze)
