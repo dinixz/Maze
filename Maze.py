@@ -1,5 +1,5 @@
 import numpy as np
-import random
+import random, time
 from copy import deepcopy
 
 obstaculo = "#"
@@ -11,12 +11,12 @@ left_symbol = '←'
 right_symbol = '→'
 
 class Maze:
-    def __init__(self, lines:int, columns:int, obstacle=None) -> None:
+    def __init__(self, lines:int, columns:int, obstacle=None, move_history=[]) -> None:
         self.maze = np.empty((lines, columns), dtype= 'object') 
         self.lines, self.columns = (lines, columns)
         
-        self.last_move = ['last', 1]
-        self.cur_move = ['cur', 0]
+        self.last_move = ['last', float('inf')]
+        self.cur_move = ['cur', float('-inf')]
         
         #ATUAL
         self.cur_line = self.lines - 1 
@@ -32,7 +32,7 @@ class Maze:
         if isinstance(obstacle, list):
             self.generate_obstacles(obstacle)
             
-        self.move_history = [self.copy()]
+        self.move_history = [self.maze]
         
     def __str__(self) -> str:
         string = '+' + '-'*(2*self.columns - 1) + '+ \n'
@@ -56,8 +56,7 @@ class Maze:
         return hash(str([item for sublist in self.maze for item in sublist]))
     
     def copy(self):
-        maze_copy = deepcopy(self)
-        return maze_copy
+        return deepcopy(self)
     
     def is_solvable(self, line:int, col:int) -> bool:
         for i in range(self.lines):
@@ -101,7 +100,7 @@ class Maze:
         else: 
             for line, col in obstacles:
                 self.maze[line, col] = obstaculo
-    
+
     def children(self) -> list:
         functions = [self.up, self.down, self.left, self.right]
         children = []
@@ -111,87 +110,89 @@ class Maze:
                 children.append(child)
         return children
     
-    def move(func):
-        def wrapper(self):
-            maze = self.copy()
-            done = func(maze)  
-            if done:
-                return maze  
-            else:
-                return None  
-        return wrapper
-    
     # Funções de movimento
-    @move
-    def up(self) -> bool:
-        if self.cur_line == 0 or self.maze[self.cur_line - 1, self.cur_col] not in {None, objetivo} or (self.maze[self.cur_line - 1, self.cur_col] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'up' and self.cur_move[1] == self.last_move[1]):
-            return False
-
-        self.maze[self.cur_line, self.cur_col] = up_symbol
-        self.maze[self.cur_line - 1, self.cur_col] = atual
-        self.cur_line -= 1
-        
-        if self.cur_move[0] == 'up': self.cur_move[1] += 1
-        else: 
-            self.last_move = self.cur_move
-            self.cur_move = ['up', 1]
+    def up(self):
+        copied = self.copy()
+        if (copied.cur_line == 0 or 
+            copied.maze[copied.cur_line - 1, copied.cur_col] not in {None, objetivo} or 
+            (copied.maze[copied.cur_line - 1, copied.cur_col] == objetivo and np.count_nonzero(copied.maze == None) > 0) or 
+            (copied.cur_move[0] != 'up' and copied.cur_move[1] == copied.last_move[1])):
+            return None
+        else:
+            copied.maze[copied.cur_line, copied.cur_col] = up_symbol
+            copied.maze[copied.cur_line - 1, copied.cur_col] = atual
+            copied.cur_line -= 1
             
-        self.move_history += [deepcopy(self)]
-        return True
+            if copied.cur_move[0] == 'up': copied.cur_move[1] += 1
+            else: 
+                copied.last_move = copied.cur_move
+                copied.cur_move = ['up', 1]
+                
+            copied.move_history += [self.maze]
+        return copied
     
-    @move
-    def down(self) -> bool:
-        if self.cur_line == self.lines - 1 or self.maze[self.cur_line + 1, self.cur_col] not in {None, objetivo} or (self.maze[self.cur_line + 1, self.cur_col] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'down' and self.cur_move[1] == self.last_move[1]):
-            return False
-
-        self.maze[self.cur_line, self.cur_col] = down_symbol
-        self.maze[self.cur_line + 1, self.cur_col] = atual
-        self.cur_line += 1
-        
-        if self.cur_move[0] == 'down': self.cur_move[1] += 1
-        else: 
-            self.last_move = self.cur_move
-            self.cur_move = ['down', 1]
+    def down(self):
+        copied = self.copy()
+        if (copied.cur_line == copied.lines - 1 or 
+            copied.maze[copied.cur_line + 1, copied.cur_col] not in {None, objetivo} or 
+            (copied.maze[copied.cur_line + 1, copied.cur_col] == objetivo and np.count_nonzero(copied.maze == None) > 0) or 
+            (copied.cur_move[0] != 'down' and copied.cur_move[1] == copied.last_move[1])):
+            return None
+        else:
+            copied.maze[copied.cur_line, copied.cur_col] = down_symbol
+            copied.maze[copied.cur_line + 1, copied.cur_col] = atual
+            copied.cur_line += 1
             
-        self.move_history += [deepcopy(self)]
-        return True
+            if copied.cur_move[0] == 'down': copied.cur_move[1] += 1
+            else: 
+                copied.last_move = copied.cur_move
+                copied.cur_move = ['down', 1]
+                
+            copied.move_history += [self.maze]
+        return copied
     
-    @move
-    def left(self) -> bool:
-        if self.cur_col == 0 or self.maze[self.cur_line, self.cur_col - 1] not in {None, objetivo} or (self.maze[self.cur_line, self.cur_col - 1] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'left' and self.cur_move[1] == self.last_move[1]):
-            return False
-
-        self.maze[self.cur_line, self.cur_col] = left_symbol
-        self.maze[self.cur_line, self.cur_col - 1] = atual
-        self.cur_col -= 1
-        
-        if self.cur_move[0] == 'left': self.cur_move[1] += 1
-        else: 
-            self.last_move = self.cur_move
-            self.cur_move = ['left', 1]
+    def left(self):
+        copied = self.copy()
+        if (copied.cur_col == 0 or 
+            copied.maze[copied.cur_line, copied.cur_col - 1] not in {None, objetivo} or 
+            (copied.maze[copied.cur_line, copied.cur_col - 1] == objetivo and np.count_nonzero(copied.maze == None) > 0) or 
+            (copied.cur_move[0] != 'left' and copied.cur_move[1] == copied.last_move[1])):
+            return None
+        else:
+            copied.maze[copied.cur_line, copied.cur_col] = left_symbol
+            copied.maze[copied.cur_line, copied.cur_col - 1] = atual
+            copied.cur_col -= 1
             
-        self.move_history += [deepcopy(self)]
-        return True
+            if copied.cur_move[0] == 'left': copied.cur_move[1] += 1
+            else: 
+                copied.last_move = copied.cur_move
+                copied.cur_move = ['left', 1]
+                
+            copied.move_history += [self.maze]
+        return copied
     
-    @move
-    def right(self) -> bool:
-        if self.cur_col == self.columns - 1 or self.maze[self.cur_line, self.cur_col + 1] not in {None, objetivo} or (self.maze[self.cur_line, self.cur_col + 1] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'right' and self.cur_move[1] == self.last_move[1]):
-            return False
-
-        self.maze[self.cur_line, self.cur_col] = right_symbol
-        self.maze[self.cur_line, self.cur_col + 1] = atual
-        self.cur_col += 1
-        
-        if self.cur_move[0] == 'right': self.cur_move[1] += 1
-        else: 
-            self.last_move = self.cur_move
-            self.cur_move = ['right', 1]
+    def right(self):
+        copied = self.copy()
+        if (copied.cur_col == copied.columns - 1 or 
+            copied.maze[copied.cur_line, copied.cur_col + 1] not in {None, objetivo} or 
+            (copied.maze[copied.cur_line, copied.cur_col + 1] == objetivo and np.count_nonzero(copied.maze == None) > 0) or 
+            (copied.cur_move[0] != 'right' and copied.cur_move[1] == copied.last_move[1])):
+            return None
+        else:
+            copied.maze[copied.cur_line, copied.cur_col] = right_symbol
+            copied.maze[copied.cur_line, copied.cur_col + 1] = atual
+            copied.cur_col += 1
             
-        self.move_history += [deepcopy(self)]
-        return True
+            if copied.cur_move[0] == 'right': copied.cur_move[1] += 1
+            else: 
+                copied.last_move = copied.cur_move
+                copied.cur_move = ['right', 1]
+                
+            copied.move_history += [self.maze]
+        return copied
     
     def is_solved(self) -> bool: 
-        return np.sum(self.maze == 0) == 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
+        return np.count_nonzero(self.maze == None) == 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
 
 def print_sequence(node=None):
     if node is None:
@@ -202,11 +203,26 @@ def print_sequence(node=None):
     for maze in node.move_history:
         print(maze)
 
+maze = Maze(3,3, obstacle=[(1,1)])
 
-# maze = Maze(4,4, obstacle=[(2,2)])
+# maze = Maze(5,5)
+# inicio = time.time()
+# maze = maze.up()
+# maze = maze.up() 
+# maze = maze.right()
+# maze = maze.down()
+# maze = maze.down()
+# maze = maze.right()
+# maze = maze.up()
+# maze = maze.up()
+# maze = maze.up()
+# maze = maze.left()
+# maze = maze.left()
+# maze = maze.up()
+# maze = maze.right()
+# maze = maze.right()
+# maze = maze.right()
+# maze = maze.down()
+# maze = maze.down()
 # print(maze)
-# maze = maze.children()[0]
-# maze = maze.children()[0]
-# maze = maze.children()[1]
-# maze = maze.children()[2]
-# print_sequence(maze)
+

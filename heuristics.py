@@ -3,29 +3,29 @@ import numpy as np
 from Maze import *
 
 #Heuristicas
-# def unsolvable(maze:Maze):
-#     for line in range(maze.lines):
-#         for col in range(maze.columns):
-#             exit = 0
-#             up
-#             if line != 0:
-#                 if maze.maze[line -1, col] is None:
-#                     exit += 1
-#             down
-#             if line != maze.lines - 1:
-#                 if maze.maze[line + 1, col] is None:
-#                     exit += 1
-#             left
-#             if col != 0:
-#                 if maze.maze[line, col -1] is None:
-#                     exit += 1
-#             right
-#             if col != maze.columns - 1:
-#                 if maze.maze[line, col + 1] is None:
-#                     exit += 1
-#             if exit < 2:
-#                 return True
-#     return False
+def unsolvable(maze:Maze):
+    for line in range(maze.lines):
+        for col in range(maze.columns):
+            exit = 0
+            # up
+            if line != 0:
+                if maze.maze[line -1, col] is None:
+                    exit += 1
+            # down
+            if line != maze.lines - 1:
+                if maze.maze[line + 1, col] is None:
+                    exit += 1
+            # left
+            if col != 0:
+                if maze.maze[line, col -1] is None:
+                    exit += 1
+            # right
+            if col != maze.columns - 1:
+                if maze.maze[line, col + 1] is None:
+                    exit += 1
+            if exit < 2:
+                return True
+    return False
 
 def distancia_euclidiana(maze:Maze, coords=None) -> float:
     if coords is None:
@@ -58,28 +58,23 @@ def h1(maze:Maze):
                 score += distancia_manhattan(maze, (line, column)) 
             elif maze.maze[line, column] in {up_symbol, down_symbol, left_symbol, right_symbol}:
                 score -= distancia_manhattan(maze, (line, column))
-    # score += np.count_nonzero(maze.maze == None) - np.count_nonzero((maze.maze == up_symbol) | (maze.maze == down_symbol) | (maze.maze == left_symbol) | (maze.maze == right_symbol))
-    # if unsolvable(maze):
-    #     score += 10**6
+    score += np.count_nonzero(maze.maze == None) - np.count_nonzero((maze.maze == up_symbol) | (maze.maze == down_symbol) | (maze.maze == left_symbol) | (maze.maze == right_symbol))
+    if unsolvable(maze):
+        return float('inf')
     return score
 
 def h2(maze:Maze):
     return -distancia_manhattan(maze) - distancia_euclidiana(maze) + np.count_nonzero(maze.maze == None)
 
 # maze = Maze(5,5)
-# l=[]
-# maze = maze.right()
-# l += maze.children()
-# maze = maze.right()
-# l += maze.children()
-# maze = maze.right()
-# l += maze.children()
-# maze = maze.right()
-# l += maze.children()
 # maze = maze.up()
-# l += maze.children()
-
-# for i in l:
-#     print(i)
-#     print(h1(i))
-#     print('-----------------------------------------')
+# maze = maze.up()
+# maze = maze.up()
+# maze = maze.right()
+# maze = maze.right()
+# maze = maze.down()
+# maze = maze.down()
+# maze = maze.down()
+# maze = maze.right()
+# print(maze)
+# print(unsolvable(maze))

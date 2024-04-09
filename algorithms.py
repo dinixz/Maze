@@ -128,24 +128,25 @@ def greedy_search(maze_inicial, heuristica):
         # Retira o maze com o MENOR valor heurístico da fila de prioridade
         atual = heapq.heappop(fila)
         print(atual)
-        print(len(fila))
         visitados.add(atual) #labirinto visitado
         
         if atual.is_solved(): #se o problema está resolvido
-            return print_sequence(atual)
+            return atual
 
         # Gera os mazes filhos a partir do atual
         children = atual.children()
         for child in children:
             if child not in visitados:
-                print('-')
                 heapq.heappush(fila, child)
 
     return None
 
 
-maze = Maze(5,5)
-greedy_search(maze, h2)
+maze = easy_mazes[1]
+print(maze)
+inicio = time.time()
+print(greedy_search(maze, h1))
+print(time.time()-inicio)
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
