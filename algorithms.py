@@ -127,7 +127,7 @@ def greedy_search(maze_inicial, heuristica):
     while fila:
         # Retira o maze com o MENOR valor heurístico da fila de prioridade
         atual = heapq.heappop(fila)
-        
+        print(atual)
         visitados.add(atual) #labirinto visitado
         
         if atual.is_solved(): #se o problema está resolvido

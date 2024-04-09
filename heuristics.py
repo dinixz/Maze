@@ -3,6 +3,26 @@ import numpy as np
 from Maze import *
 
 #Heuristicas
+def unsolvable(maze:Maze):
+    for line in range(maze.lines):
+        for col in range(maze.columns):
+            exit = 0
+            #up
+            if maze.maze[line -1, col] is None:
+                exit += 1
+            #down
+            if maze.maze[line + 1, col] is None:
+                exit += 1
+            #left
+            if maze.maze[line, col -1] is None:
+                exit += 1
+            #right
+            if maze.maze[line, col + 1] is None:
+                exit += 1
+            if exit < 2:
+                return True
+    return False
+
 def distancia_euclidiana(maze:Maze, coords=None) -> float:
     if coords is None:
         line = maze.cur_line
@@ -34,6 +54,8 @@ def h1(maze:Maze):
             elif maze.maze[line, column] in {up_symbol, down_symbol, left_symbol, right_symbol}:
                 score += distancia_euclidiana(maze, (line, column))
     score += np.count_nonzero(maze.maze == None) - np.count_nonzero((maze.maze == up_symbol) | (maze.maze == down_symbol) | (maze.maze == left_symbol) | (maze.maze == right_symbol))
+    if unsolvable(maze):
+        score += 10**6
     return score
 
 # maze = Maze(5,5)
