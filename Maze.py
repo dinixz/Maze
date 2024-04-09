@@ -5,6 +5,10 @@ from copy import deepcopy
 obstaculo = "#"
 atual = "\x1b[32mX\x1b[0m"
 objetivo = "\x1b[34mO\x1b[0m"
+up_symbol = "↑"
+down_symbol = '↓'
+left_symbol = '←'
+right_symbol = '→'
 
 class Maze:
     def __init__(self, lines:int, columns:int, obstacle=None) -> None:
@@ -123,7 +127,7 @@ class Maze:
         if self.cur_line == 0 or self.maze[self.cur_line - 1, self.cur_col] not in {None, objetivo} or (self.maze[self.cur_line - 1, self.cur_col] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'up' and self.cur_move[1] == self.last_move[1]):
             return False
 
-        self.maze[self.cur_line, self.cur_col] = "↑"
+        self.maze[self.cur_line, self.cur_col] = up_symbol
         self.maze[self.cur_line - 1, self.cur_col] = atual
         self.cur_line -= 1
         
@@ -140,7 +144,7 @@ class Maze:
         if self.cur_line == self.lines - 1 or self.maze[self.cur_line + 1, self.cur_col] not in {None, objetivo} or (self.maze[self.cur_line + 1, self.cur_col] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'down' and self.cur_move[1] == self.last_move[1]):
             return False
 
-        self.maze[self.cur_line, self.cur_col] = '↓'
+        self.maze[self.cur_line, self.cur_col] = down_symbol
         self.maze[self.cur_line + 1, self.cur_col] = atual
         self.cur_line += 1
         
@@ -157,7 +161,7 @@ class Maze:
         if self.cur_col == 0 or self.maze[self.cur_line, self.cur_col - 1] not in {None, objetivo} or (self.maze[self.cur_line, self.cur_col - 1] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'left' and self.cur_move[1] == self.last_move[1]):
             return False
 
-        self.maze[self.cur_line, self.cur_col] = '←'
+        self.maze[self.cur_line, self.cur_col] = left_symbol
         self.maze[self.cur_line, self.cur_col - 1] = atual
         self.cur_col -= 1
         
@@ -174,7 +178,7 @@ class Maze:
         if self.cur_col == self.columns - 1 or self.maze[self.cur_line, self.cur_col + 1] not in {None, objetivo} or (self.maze[self.cur_line, self.cur_col + 1] == objetivo and np.count_nonzero(self.maze == None) > 0) or (self.cur_move[0] != 'right' and self.cur_move[1] == self.last_move[1]):
             return False
 
-        self.maze[self.cur_line, self.cur_col] = '→'
+        self.maze[self.cur_line, self.cur_col] = right_symbol
         self.maze[self.cur_line, self.cur_col + 1] = atual
         self.cur_col += 1
         
