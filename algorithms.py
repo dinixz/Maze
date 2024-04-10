@@ -102,17 +102,17 @@ def breadth_first_search(initial_maze):
     while queue:
         maze = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
         if maze.is_solved():   # ver se ja esta completo
-            return print_sequence(maze)
+            return maze
         
         for child in maze.children():   # ver as children deste nó
             queue.append(child)        
     return None
 
-for maze in easy_mazes:
-    inicio = time.time()
-    breadth_first_search(maze)
-    print('\n ' + str(time.time() - inicio) + '\n')
-    print('------------------------')
+# for maze in easy_mazes:
+#     inicio = time.time()
+#     breadth_first_search(maze)
+#     print('\n ' + str(time.time() - inicio) + '\n')
+#     print('------------------------')
 
 #Greedy
 def greedy_search(maze_inicial, heuristica):
