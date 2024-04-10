@@ -203,3 +203,11 @@ def print_sequence(node=None):
     for maze in node.move_history:
         print(maze)
 
+
+# maze = Maze(4,4, obstacle=[(2,2)])
+# print(maze)
+# maze = maze.children()[0]
+# maze = maze.children()[0]
+# maze = maze.children()[1]
+# maze = maze.children()[2]
+# print_sequence(maze)
