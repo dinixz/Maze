@@ -32,7 +32,7 @@ class Maze:
         if isinstance(obstacle, list):
             self.generate_obstacles(obstacle)
             
-        self.move_history = [self.maze]
+        self.move_history = [self]
         
     def __str__(self) -> str:
         string = '+' + '-'*(2*self.columns - 1) + '+ \n'
@@ -128,7 +128,7 @@ class Maze:
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['up', 1]
                 
-            copied.move_history += [self.maze]
+            copied.move_history.append(self.maze)
         return copied
     
     def down(self):
@@ -148,7 +148,7 @@ class Maze:
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['down', 1]
                 
-            copied.move_history += [self.maze]
+            copied.move_history.append(self.maze)
         return copied
     
     def left(self):
@@ -168,7 +168,7 @@ class Maze:
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['left', 1]
                 
-            copied.move_history += [self.maze]
+            copied.move_history.append(self.maze)
         return copied
     
     def right(self):
@@ -188,17 +188,8 @@ class Maze:
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['right', 1]
                 
-            copied.move_history += [self.maze]
+            copied.move_history.append(self.maze)
         return copied
-    
-    def move(self, click):
-        functions = {'up': self.up(), 'down': self.down(), 'left': self.left(), 'right': self.right()}
-        #forma para descobrir o quadrado onde o click foi dado
-        dir = 'direçao'
-        if functions.get(dir):
-            return functions.get(dir)
-        return None
-        
     
     def is_solved(self) -> bool: 
         return np.count_nonzero(self.maze == None) == 0 and self.cur_line == self.target_line and self.cur_col == self.target_col

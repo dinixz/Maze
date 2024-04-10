@@ -40,6 +40,8 @@ hard_mazes = [
     Maze(7,7, obstacle= [(6,1), (6,2), (1,6), (2,4)])
 ]
 
+maze = Maze(3,3)
+
 #DFS
 def depth_first_search(initial_maze:Maze):
     stack = deque([initial_maze]) 
@@ -49,14 +51,20 @@ def depth_first_search(initial_maze:Maze):
         node = stack.pop() #get the last element that came in
         
         if node.is_solved():   
-            return print_sequence(node)
+            return node
         visited.add(node)
         children = node.children()
         for child in children:
             if child not in visited:
                 stack.append(child)
                 
-    return print_sequence(None)
+    return None
+
+# print('Depth First Search')
+# inicio = time.time()
+# print(depth_first_search(maze))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
 #Limited DFS
 def depth_limited_search(initial_maze:Maze, depth_limit:int):
@@ -67,22 +75,33 @@ def depth_limited_search(initial_maze:Maze, depth_limit:int):
         node, depth = stack.pop()
         if depth < depth_limit:
             if node.is_solved():
-                return print_sequence(node)
+                return node
             visited.add(node)
             children = node.children()
             for child in children:
                 if child not in visited:
                     stack.append([child, depth + 1])
+        else: break
     return None
 
+# print('Depth Limited Search')
+# inicio = time.time()
+# print(depth_limited_search(maze, 10))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
+
 def iterative_deepening_search(initial_maze, depth_limit):
-    depth=0
-    result=None
-    while result==None:
-        if depth<depth_limit:
-            depth+=1
-        result = depth_limited_search(initial_maze,depth)
+    for i in range(depth_limit):
+        result = depth_limited_search(initial_maze, i)
+        if result:
+            return result
     return None
+
+# print('Iterative Deepening Search')
+# inicio = time.time()
+# print(iterative_deepening_search(maze, 10))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
 #BFS
 def breadth_first_search(initial_maze):
@@ -91,11 +110,17 @@ def breadth_first_search(initial_maze):
     while queue:
         maze = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
         if maze.is_solved():   # ver se ja esta completo
-            return print_sequence(maze)
+            return maze
         
         for child in maze.children():   # ver as children deste nó
             queue.append(child)        
     return None
+
+# print('Breadth First Search')
+# inicio = time.time()
+# print(breadth_first_search(maze))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
 #Greedy
 def greedy_search(maze_inicial, heuristica):
@@ -123,11 +148,18 @@ def greedy_search(maze_inicial, heuristica):
 
     return None
 
-maze = easy_mazes[5]
-print(maze)
-inicio = time.time()
-print(greedy_search(maze, h1))
-print(time.time()-inicio)
+# print('Greedy Search')
+# inicio = time.time()
+# print(greedy_search(maze, h1))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
+
+# maze = easy_mazes[6]
+# print(maze)
+# inicio = time.time()
+# final = greedy_search(maze, h1)
+# print_sequence(final)
+# print(time.time()-inicio)
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
