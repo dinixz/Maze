@@ -191,6 +191,15 @@ class Maze:
             copied.move_history += [self.maze]
         return copied
     
+    def move(self, click):
+        functions = {'up': self.up(), 'down': self.down(), 'left': self.left(), 'right': self.right()}
+        #forma para descobrir o quadrado onde o click foi dado
+        dir = 'direçao'
+        if functions.get(dir):
+            return functions.get(dir)
+        return None
+        
+    
     def is_solved(self) -> bool: 
         return np.count_nonzero(self.maze == None) == 0 and self.cur_line == self.target_line and self.cur_col == self.target_col
 
@@ -202,27 +211,4 @@ def print_sequence(node=None):
     # prints the sequence of states
     for maze in node.move_history:
         print(maze)
-
-maze = Maze(3,3, obstacle=[(1,1)])
-
-# maze = Maze(5,5)
-# inicio = time.time()
-# maze = maze.up()
-# maze = maze.up() 
-# maze = maze.right()
-# maze = maze.down()
-# maze = maze.down()
-# maze = maze.right()
-# maze = maze.up()
-# maze = maze.up()
-# maze = maze.up()
-# maze = maze.left()
-# maze = maze.left()
-# maze = maze.up()
-# maze = maze.right()
-# maze = maze.right()
-# maze = maze.right()
-# maze = maze.down()
-# maze = maze.down()
-# print(maze)
 
