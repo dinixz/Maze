@@ -58,13 +58,6 @@ def depth_first_search(initial_maze:Maze):
                 
     return print_sequence(None)
 
-# for maze in easy_mazes:
-#     inicio = time.time()
-#     depth_first_search(maze)
-#     print('\n ' + str(time.time() - inicio) + '\n')
-#     print('------------------------')
-
-
 #Limited DFS
 def depth_limited_search(initial_maze:Maze, depth_limit:int):
     stack = deque([(initial_maze, 0)])  
@@ -82,8 +75,6 @@ def depth_limited_search(initial_maze:Maze, depth_limit:int):
                     stack.append([child, depth + 1])
     return None
 
-# maze = Maze(6,6, obstacle=[(0,0), (0,1), (0,2)])
-
 def iterative_deepening_search(initial_maze, depth_limit):
     depth=0
     result=None
@@ -92,8 +83,6 @@ def iterative_deepening_search(initial_maze, depth_limit):
             depth+=1
         result = depth_limited_search(initial_maze,depth)
     return None
-
-# maze = Maze(6,6, obstacle=[(0,0), (0,1), (0,2)])
 
 #BFS
 def breadth_first_search(initial_maze):
@@ -108,22 +97,15 @@ def breadth_first_search(initial_maze):
             queue.append(child)        
     return None
 
-# for maze in easy_mazes:
-#     inicio = time.time()
-#     breadth_first_search(maze)
-#     print('\n ' + str(time.time() - inicio) + '\n')
-#     print('------------------------')
-
 #Greedy
 def greedy_search(maze_inicial, heuristica):
     # Define um método de comparação para os mazes com base na função heurística fornecida
-    setattr(maze_inicial, "__lt__", lambda self, other: heuristica(self) < heuristica(other))
+    setattr(Maze, "__lt__", lambda self, other: heuristica(self) < heuristica(other))
     
     # Inicializa uma lista para armazenar os labirintos a serem explorados
     fila = [maze_inicial]
     # Inicializa um conjunto para manter o controle dos estados visitados e evitar revisitá-los
     visitados = set()
-    
     while fila:
         # Retira o maze com o MENOR valor heurístico da fila de prioridade
         atual = heapq.heappop(fila)
@@ -131,17 +113,21 @@ def greedy_search(maze_inicial, heuristica):
         visitados.add(atual) #labirinto visitado
         
         if atual.is_solved(): #se o problema está resolvido
-            return print_sequence(atual)
-        
+            return atual
+
         # Gera os mazes filhos a partir do atual
-        for filho in atual.children():
-            if filho not in visitados:
-                heapq.heappush(fila, filho)
+        children = atual.children()
+        for child in children:
+            if child not in visitados:
+                heapq.heappush(fila, child)
 
     return None
 
-# maze = Maze(4,4)
-# greedy_search(maze, distancia_euclidiana)
+maze = easy_mazes[5]
+print(maze)
+inicio = time.time()
+print(greedy_search(maze, h1))
+print(time.time()-inicio)
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
