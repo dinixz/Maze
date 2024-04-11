@@ -147,30 +147,30 @@ def greedy_search(initial_maze:Maze, heuristica):
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history)) #-1=estado inicial
 
-counter_manhattan = 0
-counter_euclidiana = 0
-empate = 0
-for i, maze in enumerate(medium_mazes):
-    print('Maze ' + str(i))
-    inicio = time.time()
-    a_star_search(maze, distancia_euclidiana)
-    tempo_euclidiana = time.time() - inicio
+# counter_manhattan = 0
+# counter_euclidiana = 0
+# empate = 0
+# for i, maze in enumerate(easy_mazes):
+#     print('Maze ' + str(i + 1))
+#     inicio = time.time()
+#     a_star_search(maze, distancia_euclidiana)
+#     tempo_euclidiana = time.time() - inicio
 
-    inicio = time.time()
-    a_star_search(maze, distancia_manhattan)
-    tempo_manhattan = time.time() - inicio
+#     inicio = time.time()
+#     a_star_search(maze, distancia_manhattan)
+#     tempo_manhattan = time.time() - inicio
 
-    diferença = tempo_euclidiana - tempo_manhattan
-    if diferença > 0.5:
-        counter_manhattan += 1
-    elif diferença < -0.5:
-        counter_euclidiana += 1
-    else:
-        empate += 1
+#     diferença = tempo_euclidiana - tempo_manhattan
+#     if diferença > 0:
+#         counter_manhattan += 1
+#     elif diferença < 0:
+#         counter_euclidiana += 1
+#     else:
+#         empate += 1
         
-print(counter_euclidiana)
-print(counter_manhattan)
-print(empate)
+# print(counter_euclidiana)
+# print(counter_manhattan)
+# print(empate)
 
 def  weighted_a_star_search(maze_inicial, heuristica, w):
         return greedy_search(maze_inicial, lambda hrst: w*heuristica(maze_inicial) + len(maze_inicial.move_history) - 1)
