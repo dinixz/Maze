@@ -1,9 +1,9 @@
 from Maze import Maze, print_sequence
 from collections import deque
 import heapq
-from heuristics import *
+from heuristics import distancia_euclidiana, distancia_manhattan
 import time
-  
+
 easy_mazes = [
     Maze(3,3),
     Maze(6,6, obstacle= [(0,0), (0,1), (0,2)]),
@@ -44,10 +44,8 @@ hard_mazes = [
 def depth_first_search(initial_maze:Maze):
     stack = deque([initial_maze]) 
     visited = set()
-    
     while stack:
         node = stack.pop() #get the last element that came in
-        
         if node.is_solved():   
             return node
         visited.add(node)
@@ -56,81 +54,123 @@ def depth_first_search(initial_maze:Maze):
             if child not in visited:
                 stack.append(child)
                 
-    return print_sequence(None)
+    return None
+
+# maze = Maze(3,3)
+# print('Depth First Search')
+# inicio = time.time()
+# final = depth_first_search(maze)
+# print_sequence(final)
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
 #Limited DFS
 def depth_limited_search(initial_maze:Maze, depth_limit:int):
     stack = deque([(initial_maze, 0)])  
     visited = set()
-    
     while stack:
         node, depth = stack.pop()
         if depth < depth_limit:
             if node.is_solved():
-                return print_sequence(node)
+                return node
             visited.add(node)
             children = node.children()
             for child in children:
                 if child not in visited:
                     stack.append([child, depth + 1])
+        else: break
     return None
 
+# maze = Maze(3,3)
+# print('Depth Limited Search')
+# inicio = time.time()
+# print(depth_limited_search(maze, 10))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
+
+#Iterative Deepening search
 def iterative_deepening_search(initial_maze, depth_limit):
-    depth=0
-    result=None
-    while result==None:
-        if depth<depth_limit:
-            depth+=1
-        result = depth_limited_search(initial_maze,depth)
+    for i in range(depth_limit):
+        result = depth_limited_search(initial_maze, i)
+        if result:
+            return result
     return None
+
+# maze = Maze(3,3)
+# print('Iterative Deepening Search')
+# inicio = time.time()
+# print(iterative_deepening_search(maze, 10))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
 #BFS
 def breadth_first_search(initial_maze):
     queue = deque([initial_maze])  
-    
     while queue:
         maze = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
-        if maze.is_solved():   # ver se ja esta completo
+        if maze.is_solved(): 
             return maze
-        
         for child in maze.children():   # ver as children deste nó
             queue.append(child)        
     return None
 
-#Greedy
-def greedy_search(maze_inicial, heuristica):
-    # Define um método de comparação para os mazes com base na função heurística fornecida
-    setattr(Maze, "__lt__", lambda self, other: heuristica(self) < heuristica(other))
-    
-    # Inicializa uma lista para armazenar os labirintos a serem explorados
-    fila = [maze_inicial]
-    # Inicializa um conjunto para manter o controle dos estados visitados e evitar revisitá-los
-    visitados = set()
-    while fila:
-        # Retira o maze com o MENOR valor heurístico da fila de prioridade
-        atual = heapq.heappop(fila)
-        
-        visitados.add(atual) #labirinto visitado
-        
-        if atual.is_solved(): #se o problema está resolvido
-            return atual
+# maze = Maze(3,3)
+# print('Breadth First Search')
+# inicio = time.time()
+# print(breadth_first_search(maze))
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
-        # Gera os mazes filhos a partir do atual
+#Greedy
+def greedy_search(initial_maze:Maze, heuristica):
+    setattr(Maze, "__lt__", lambda self, other: heuristica(self) < heuristica(other)) # Define um método de comparação para os mazes com base na função heurística fornecida
+    priority_queue = [initial_maze]
+    visited = set()
+    while priority_queue:
+        atual = heapq.heappop(priority_queue) #Retira o maze com o MENOR valor heurístico da fila de prioridade
+        if atual.is_solved(): 
+            return atual
+        visited.add(atual) #labirinto visitado
         children = atual.children()
         for child in children:
-            if child not in visitados:
-                heapq.heappush(fila, child)
-
+            if child not in visited:
+                heapq.heappush(priority_queue, child)
     return None
 
-# maze = easy_mazes[5]
-# print(maze)
+# maze = Maze(3,3)
+# print('Greedy Search')
 # inicio = time.time()
 # print(greedy_search(maze, h1))
-# print(time.time()-inicio)
+# print(time.time() - inicio)
+# print('---------------------------------------------')
 
 def a_star_search(maze_inicial, heuristica):
-        return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
+        return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history)) #-1=estado inicial
+
+# counter_manhattan = 0
+# counter_euclidiana = 0
+# empate = 0
+# for i, maze in enumerate(easy_mazes):
+#     print('Maze ' + str(i + 1))
+#     inicio = time.time()
+#     a_star_search(maze, distancia_euclidiana)
+#     tempo_euclidiana = time.time() - inicio
+
+#     inicio = time.time()
+#     a_star_search(maze, distancia_manhattan)
+#     tempo_manhattan = time.time() - inicio
+
+#     diferença = tempo_euclidiana - tempo_manhattan
+#     if diferença > 0:
+#         counter_manhattan += 1
+#     elif diferença < 0:
+#         counter_euclidiana += 1
+#     else:
+#         empate += 1
+        
+# print(counter_euclidiana)
+# print(counter_manhattan)
+# print(empate)
 
 def  weighted_a_star_search(maze_inicial, heuristica, w):
         return greedy_search(maze_inicial, lambda hrst: w*heuristica(maze_inicial) + len(maze_inicial.move_history) - 1)

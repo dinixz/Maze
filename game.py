@@ -1,15 +1,10 @@
 from Maze import *
 from algorithms import *
 
-def move_player(state:Maze, click):
-    functions = {'up': state.up(), 'down': state.down(), 'left': state.left(), 'right': state.right()}
-    #forma para descobrir o quadrado onde o click foi dado
-    dir = 'direçao'
-    if functions.get(dir):
-        return functions.get(dir)
-    return None
+def possible_moves_player(state:Maze):
+    return {'up': state.up(), 'down': state.down(), 'left': state.left(), 'right': state.right()}
 
-def hint(state:Maze, final_state:Maze) -> str:
+def get_hint(state:Maze, final_state:Maze) -> str:
     '''
         Podiamos gerar o final_state desta forma:
             1- O jogador jogou e atualiza-se o estado
