@@ -4,7 +4,6 @@ import sys
 import math
 from algorithms import depth_first_search
 
-
 #CORES
 COR_PAREDE = (34, 139, 34) # green color
 COR_CIRCLE = (34, 139, 34)
