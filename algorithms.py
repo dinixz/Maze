@@ -49,7 +49,7 @@ def depth_first_search(initial_maze:Maze):
         node = stack.pop() #get the last element that came in
         
         if node.is_solved():   
-            return print_sequence(node)
+            return node
         visited.add(node)
         children = node.children()
         for child in children:
@@ -123,11 +123,11 @@ def greedy_search(maze_inicial, heuristica):
 
     return None
 
-maze = easy_mazes[5]
-print(maze)
-inicio = time.time()
-print(greedy_search(maze, h1))
-print(time.time()-inicio)
+# maze = easy_mazes[5]
+# print(maze)
+# inicio = time.time()
+# print(greedy_search(maze, h1))
+# print(time.time()-inicio)
 
 def a_star_search(maze_inicial, heuristica):
         return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1) #-1=estado inicial
