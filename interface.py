@@ -169,11 +169,17 @@ while running:
     if game_state == 'menu':
         draw_menu()
     elif game_state == 'easy_game':
-        draw_game(random.choice(easy_mazes))
+        maze = random.choice(easy_mazes)
+        maze = a_star_search(maze, distancia_manhattan)
+        draw_game(maze)
         game_state = 'waiting'
     elif game_state == 'medium_game':
-        draw_game(random.choice(medium_mazes))
+        maze = random.choice(medium_mazes)
+        maze = a_star_search(maze, distancia_manhattan)
+        draw_game(maze)
         game_state = 'waiting'
     elif game_state == 'hard_game':
-        draw_game(random.choice(hard_mazes))
+        maze = random.choice(hard_mazes)
+        maze = a_star_search(maze, distancia_manhattan)
+        draw_game(maze)
         game_state = 'waiting'
