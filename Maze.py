@@ -2,7 +2,7 @@ import numpy as np
 from copy import copy, deepcopy
 
 obstaculo = "#"
-atual = "X"
+cur = "X"
 objetivo = "O"
 up_symbol = "↑"
 down_symbol = '↓'
@@ -20,7 +20,7 @@ class Maze:
             #ATUAL
             self.cur_line = self.lines - 1 
             self.cur_col = 0 
-            self.maze[self.cur_line, self.cur_col] = atual
+            self.maze[self.cur_line, self.cur_col] = cur
             
             #TARGET
             self.target_line = 0
@@ -85,7 +85,7 @@ class Maze:
         
         else:
             copied.maze[copied.cur_line, copied.cur_col] = up_symbol
-            copied.maze[copied.cur_line - 1, copied.cur_col] = atual
+            copied.maze[copied.cur_line - 1, copied.cur_col] = cur
             copied.cur_line -= 1
             
             if copied.cur_move[0] == 'up': copied.cur_move[1] += 1
@@ -105,7 +105,7 @@ class Maze:
             return None
         else:
             copied.maze[copied.cur_line, copied.cur_col] = down_symbol
-            copied.maze[copied.cur_line + 1, copied.cur_col] = atual
+            copied.maze[copied.cur_line + 1, copied.cur_col] = cur
             copied.cur_line += 1
             
             if copied.cur_move[0] == 'down': copied.cur_move[1] += 1
@@ -125,7 +125,7 @@ class Maze:
             return None
         else:
             copied.maze[copied.cur_line, copied.cur_col] = left_symbol
-            copied.maze[copied.cur_line, copied.cur_col - 1] = atual
+            copied.maze[copied.cur_line, copied.cur_col - 1] = cur
             copied.cur_col -= 1
             
             if copied.cur_move[0] == 'left': copied.cur_move[1] += 1
@@ -145,7 +145,7 @@ class Maze:
             return None
         else:
             copied.maze[copied.cur_line, copied.cur_col] = right_symbol
-            copied.maze[copied.cur_line, copied.cur_col + 1] = atual
+            copied.maze[copied.cur_line, copied.cur_col + 1] = cur
             copied.cur_col += 1
             
             if copied.cur_move[0] == 'right': copied.cur_move[1] += 1

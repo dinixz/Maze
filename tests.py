@@ -1,7 +1,4 @@
-from Maze import Maze
-from heuristics import distancia_euclidiana, distancia_manhattan
 from algorithms import *
-import time
 
 import sys
 

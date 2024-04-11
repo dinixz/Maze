@@ -1,8 +1,7 @@
-from Maze import Maze, print_sequence
 from collections import deque
-import heapq
-from heuristics import distancia_euclidiana, distancia_manhattan
-import time
+import heapq, time
+from Maze import *
+from heuristics import *
 
 easy_mazes = [
     Maze(3,3),

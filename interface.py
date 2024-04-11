@@ -1,11 +1,6 @@
-import pygame
-from Maze import * 
-import sys
-import math
-from algorithms import depth_first_search
+import pygame, sys, random
+from algorithms import *
 
-
-#CORES
 COR_PAREDE = (34, 139, 34) # green color
 COR_CIRCLE = (34, 139, 34)
 COR_CAMINHO = (200, 200, 200)  # Light gray for empty path
@@ -20,212 +15,165 @@ white = (255, 255, 255)
 green = (0, 255, 0)
 blue = (0, 0, 128)
 
-
 pygame.init()
-maze = Maze(3,3)
 
+pygame_player = pygame.image.load('images/pacman.png')
+pygame_end = pygame.image.load('images/end.png')
+pygame_barrier = pygame.image.load('images/barrier.png')
+pygame_return = pygame.image.load('images/return.png')
+pygame_background = pygame.image.load('images/geometric.jpg')
 
-tela_completa = (1000, 700)
-tela_comp = pygame.display.set_mode(tela_completa)
+return_symbol = pygame.transform.scale(pygame_return, (50,50))
 
-#INICIAL
-font = pygame.font.Font('freesansbold.ttf' ,40)
-text = font.render("UNEQUAL MAZE THE CHALLENGE", True, (255, 0, 0))
-tela_comp.blit(text, (100, 100))
+#janela toda
+janela_size = (1000, 700) 
+janela = pygame.display.set_mode(janela_size)
 
-
-#JOGO
-tamanho_celula = 600// max(maze.lines, maze.columns)# Adjust cell size based on window size
-
-wit, heig = tamanho_celula * maze.columns, tamanho_celula *maze.lines
-tamanho_tela = (wit, heig)
-tela = pygame.Surface(tamanho_tela)
-
-
-relogio = pygame.time.Clock()
-
-def seta(tela, linha, coluna, num):
-    superficie = pygame.Surface((tamanho_celula, tamanho_celula))
-    pygame.draw.polygon(superficie, (255, 0, 0), [[tamanho_celula//2.1,tamanho_celula//4], [tamanho_celula//3.4,tamanho_celula//2],[tamanho_celula//1.5, tamanho_celula//2]])
-    pygame.draw.rect(superficie, (255, 0, 0), (tamanho_celula//2.54 , tamanho_celula//2.5, tamanho_celula//5,  tamanho_celula //2.7))
-    angulo_rotacao = 90  # Ângulo de rotação em graus
-    superficie_rotacionada = pygame.transform.rotate(superficie, angulo_rotacao*num)
-
-    tela.blit(superficie_rotacionada,( tamanho_celula*coluna, tamanho_celula*linha))
-
-pygame_image = pygame.image.load('pacman.png')
-pygame_end = pygame.image.load('end.png')
-pygame_barrier = pygame.image.load('barrier.png')
-
-player = pygame.transform.scale(pygame_image, (tamanho_celula//2, tamanho_celula//2))
-end = pygame.transform.scale(pygame_end, (tamanho_celula//2, tamanho_celula//2))
-barrier = pygame.transform.scale(pygame_barrier, (tamanho_celula//2, tamanho_celula//2))
-
-def desenhar_labirinto(maze):
-    tela_comp.blit(caixaDeTexto(ficie, "hints",(50, 20), 20), (770, 200))
-
-    for linha in range(maze.lines):
-        for coluna in range(maze.columns):
-            x, y = coluna * tamanho_celula , linha * tamanho_celula
-            rec = pygame.Rect( x, y, tamanho_celula, tamanho_celula)
-            pygame.draw.rect(tela, (0,0,0),rec,1)
-
-            cor = COR_FUNDO
-            atual = maze.maze[linha][coluna]   
-            rec = pygame.Rect(x, y, tamanho_celula, tamanho_celula)
-
-            if atual == "#":  # Obstacle
-                cor = COR_OBSTACULO
-                tela.blit(barrier, (x + tamanho_celula//4, y + tamanho_celula//4))
-
-            elif atual == "\x1b[34mO\x1b[0m":  # Goal position
-                cor = COR_OBJETIVO
-                tela.blit(end, (x + tamanho_celula//4, y + tamanho_celula//4))
-
-            elif atual == "\x1b[32mX\x1b[0m": # actual position
-                cor = COR_POSITION
-                pygame.draw.rect(tela, (0, 0, 0), rec)
-                tela.blit(player, (x + tamanho_celula//4, y + tamanho_celula//4))
-                
-            elif atual == "↑":
-                cor = COR_ATUAL
-                seta(tela, linha, coluna, 0)
-
-            elif atual == "↓":
-                cor = COR_ATUAL
-                seta(tela, linha, coluna, 2)
-
-            elif atual == '←':
-                cor = COR_ATUAL
-                seta(tela, linha, coluna, 1)
-
-            elif atual == "→":  
-                cor = COR_ATUAL      
-                seta(tela, linha, coluna, 3) 
-
-            else:  # Empty path
-                cor = COR_PAREDE
-                pygame.draw.circle(tela, COR_CIRCLE, (x + tamanho_celula//2, y + tamanho_celula//2), tamanho_celula//8)  # Draw white border with width 2
-            pygame.draw.rect(tela, cor, (x, y, tamanho_celula, tamanho_celula),10)
-            pygame.draw.rect(tela, (0,0,0), (x, y, tamanho_celula, tamanho_celula),1)
-
-    tela_comp.blit(tela, ((tela_completa[0] - wit) // 3,(tela_completa[1] - heig) // 3))
-
-ficie = pygame.Surface((150, 55))
-
-
-
-def caixaDeTexto(superficie, texto, posi, tamanhoLetra = 20, fonte = 'freesansbold.ttf',  corCaixa = (255, 255, 90) , corLetra = (50, 50, 50) ):
-    pygame.draw.rect(superficie, corCaixa, (0,0, 150, 55),30,  border_radius=10)
-    font = pygame.font.Font(fonte ,tamanhoLetra)
-    text = font.render(texto, True, corLetra)
-    superficie.blit(text, posi)
-    return superficie
-
-tela_comp.blit(caixaDeTexto(ficie, "hints",(50, 20), 20), (770, 200))
-
-
-# Tela inicial
-# pygame_menu = pygame.image.load('geometric.jpg')
-
-# tam_inicial = (1000, 700)
-# tela_inicial = pygame.Surface(tam_inicial)
-# tela_inicial.blit(pygame_menu, (0,0))
-
-# fonte = pygame.font.SysFont("Arial", 30)
-# texto_facil = fonte.render("FÁCIL", True, COR_LETRA)
-# texto_medio = fonte.render("MÉDIO", True, COR_LETRA)
-# texto_dificil = fonte.render("DIFÍCIL", True, COR_LETRA)
-
-# botao_facil = pygame.Rect(400 , 300 , 150, 55)
-# botao_medio = pygame.Rect(400, 375, 150, 55)
-# botao_dificil = pygame.Rect(400, 450, 150, 55)
-
-# pygame.draw.rect(tela_inicial, COR_BOTAO, botao_facil,border_radius=10)
-# pygame.draw.rect(tela_inicial, COR_BOTAO, botao_medio,border_radius=10)
-# pygame.draw.rect(tela_inicial, COR_BOTAO, botao_dificil,border_radius=10)
-
-# tela_inicial.blit(texto_facil, (botao_facil.x + 40, botao_facil.y + 10))
-# tela_inicial.blit(texto_medio, (botao_medio.x +30, botao_medio.y+ 10))
-# tela_inicial.blit(texto_dificil, (botao_dificil.x + 30, botao_dificil.y + 10))
-
-
-# font = pygame.font.Font('freesansbold.ttf' ,40)
-# text = font.render("UNEQUAL MAZE THE CHALLENGE", True, (112, 129, 145))
-# tela_inicial.blit(text, (150, 100))
-
-
-# tela_comp.blit(tela_inicial,(0,0))
-
-
-
-# Tela inicial
-pygame_menu = pygame.image.load('geometric.jpg')
-
-
-tam_inicial = (1000, 700)
-tela_inicial = pygame.Surface(tam_inicial)
-tela_inicial.blit(pygame_menu, (0,0))
-
-fonte = pygame.font.SysFont("Arial", 30)
-texto_facil = fonte.render("FÁCIL", True, COR_LETRA)
-texto_medio = fonte.render("MÉDIO", True, COR_LETRA)
-texto_dificil = fonte.render("DIFÍCIL", True, COR_LETRA)
-
-offset_x = (tela_comp.get_width() - tela_inicial.get_width()) // 2
-offset_y = (tela_comp.get_height() - tela_inicial.get_height()) // 2
-
-
+#botões
 botao_facil = pygame.Rect(400 , 300 , 150, 55)
 botao_medio = pygame.Rect(400, 375, 150, 55)
 botao_dificil = pygame.Rect(400, 450, 150, 55)
+botao_return = return_symbol.get_rect() #cria um retangulo para conter a imagem
+botao_return.center = (25,25) #posiçao na janela
 
-pygame.draw.rect(tela_inicial, COR_BOTAO, botao_facil,border_radius=10)
-pygame.draw.rect(tela_inicial, COR_BOTAO, botao_medio,border_radius=10)
-pygame.draw.rect(tela_inicial, COR_BOTAO, botao_dificil,border_radius=10)
+def seta(tela, cell_size, linha, coluna, num): #0-up 1-left 2-down 3-right
+    superficie = pygame.Surface((cell_size, cell_size)) #cria lugar da seta
+    
+    pygame.draw.polygon(superficie, (255, 0, 0), [[cell_size//2.1, cell_size//4], [cell_size//3.4, cell_size//2],[cell_size//1.5, cell_size//2]]) #triangulo da seta
+    pygame.draw.rect(superficie, (255, 0, 0), (cell_size//2.54 , cell_size//2.5, cell_size//5, cell_size //2.7)) #retangulo da seta
+    angulo_rotacao = 90  #rotaçao da seta
+    superficie_rotacionada = pygame.transform.rotate(superficie, angulo_rotacao*num) #roda a celula
 
-tela_inicial.blit(texto_facil, (botao_facil.x + 40, botao_facil.y + 10))
-tela_inicial.blit(texto_medio, (botao_medio.x +30, botao_medio.y+ 10))
-tela_inicial.blit(texto_dificil, (botao_dificil.x + 30, botao_dificil.y + 10))
+    tela.blit(superficie_rotacionada,( cell_size*coluna, cell_size*linha)) #desenha a seta
 
+def draw_menu():
+    janela.blit(pygame_background, (0,0))
 
-font = pygame.font.Font('freesansbold.ttf' ,40)
-text = font.render("UNEQUAL MAZE THE CHALLENGE", True, (112, 129, 145))
-tela_inicial.blit(text, (150, 100))
+    button_font = pygame.font.SysFont("Arial", 30)
+    texto_facil = button_font.render("FÁCIL", True, COR_LETRA)
+    texto_medio = button_font.render("MÉDIO", True, COR_LETRA)
+    texto_dificil = button_font.render("DIFÍCIL", True, COR_LETRA)
 
+    pygame.draw.rect(janela, COR_BOTAO, botao_facil, border_radius=10)
+    pygame.draw.rect(janela, COR_BOTAO, botao_medio, border_radius=10)
+    pygame.draw.rect(janela, COR_BOTAO, botao_dificil, border_radius=10)
 
-tela_comp.blit(tela_inicial,(0,0))
+    janela.blit(texto_facil, (botao_facil.x + 30, botao_facil.y + 10))
+    janela.blit(texto_medio, (botao_medio.x +30, botao_medio.y+ 10))
+    janela.blit(texto_dificil, (botao_dificil.x + 30, botao_dificil.y + 10))
+    
+    title_font = pygame.font.Font('freesansbold.ttf' ,40)
+    text = title_font.render("UNEQUAL MAZE THE CHALLENGE", True, (112, 129, 145))
+    janela.blit(text, (150, 100))
+    
+    pygame.display.flip()
 
+def draw_game(maze:Maze):
+    janela.blit(pygame_background, (0,0))
+    
+    cell_size = 600// max(maze.lines, maze.columns)
+    tela_size = (cell_size * maze.columns, cell_size * maze.lines)
+    tela = pygame.Surface(tela_size) #tela onde vai estar o labirinto
+    
+    relogio = pygame.time.Clock()
+    relogio.tick(20)
+    
+    player = pygame.transform.scale(pygame_player, (cell_size//2, cell_size//2))
+    end = pygame.transform.scale(pygame_end, (cell_size//2, cell_size//2))
+    barrier = pygame.transform.scale(pygame_barrier, (cell_size//2, cell_size//2))
+    
+    janela.blit(return_symbol, botao_return)
+    
+    items = {objetivo: end, cur: player, obstaculo: barrier}
+    
+    draw_steps(tela, maze, cell_size, items)
+    
+    pygame.display.flip()
 
-running = True
-while running:
-    # Limpar a tela
-    pygame.display.update()
+def draw_maze(tela,  maze:Maze, cell_size, items:dict): #maze é uma np.array
+    lines, columns = maze.shape
+    for line in range(lines):
+        for col in range(columns):
+            x, y = col * cell_size , line * cell_size
+            cell = pygame.Rect( x, y, cell_size, cell_size) # pos_x, pos_y, comprimento, altura
+            pygame.draw.rect(tela, (0,0,0), cell, 1) # superficie, cor, item, expessura
 
-    # Atualizar a tela
+            cor = COR_FUNDO
+            atual = maze[line, col]   
 
-    # Limitar a taxa de quadros
-    relogio.tick(60)
+            if atual == obstaculo: 
+                cor = COR_OBSTACULO
+                tela.blit(items.get(obstaculo), (x + cell_size//4, y + cell_size//4))
 
-    # Tratar eventos
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            running = False
+            elif atual == objetivo: 
+                cor = COR_OBJETIVO
+                tela.blit(items.get(objetivo), (x + cell_size//4, y + cell_size//4))
 
-        if evento.type == pygame.MOUSEBUTTONDOWN:
-            if botao_facil.collidepoint(evento.pos):
-                tela_inicial.fill(COR_FUNDO)
-                maze = depth_first_search(maze)
-        
-                desenhar_labirinto(maze)
-
-
-            elif botao_medio.collidepoint(evento.pos):
+            elif atual == cur: 
+                cor = COR_POSITION
+                pygame.draw.rect(tela, (0, 0, 0), cell)
+                tela.blit(items.get(cur), (x + cell_size//4, y + cell_size//4))
                 
-                desenhar_labirinto(maze)
-            elif botao_dificil.collidepoint(evento.pos):
-                desenhar_labirinto(maze)
+            elif atual == up_symbol:
+                cor = COR_ATUAL
+                seta(tela, cell_size, line, col, 0)
 
+            elif atual == down_symbol:
+                cor = COR_ATUAL
+                seta(tela, cell_size, line, col, 2)
 
-pygame.quit()
-       
+            elif atual == left_symbol:
+                cor = COR_ATUAL
+                seta(tela, cell_size, line, col, 1)
+
+            elif atual == right_symbol:  
+                cor = COR_ATUAL      
+                seta(tela, cell_size, line, col, 3) 
+
+            else:  # Empty path
+                cor = COR_PAREDE
+                pygame.draw.circle(tela, COR_CIRCLE, (x + cell_size//2, y + cell_size//2), cell_size//8)  
+                
+            pygame.draw.rect(tela, cor, (x, y, cell_size, cell_size),10)
+            pygame.draw.rect(tela, (0,0,0), (x, y, cell_size, cell_size),1)
+
+    janela.blit(tela, ((janela_size[0] - tela.get_size()[0]) // 2,(janela_size[1] - tela.get_size()[1]) // 2))
+    
+def draw_steps(tela, maze:Maze, cell_size, items:dict):
+    for step in maze.move_history:
+        draw_maze(tela, step, cell_size, items)
+        pygame.display.update()
+        time.sleep(0.5)
+
+# Mantém a janela aberta
+running = True
+game_state = 'menu'
+while running:
+    pygame.display.update()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if game_state == 'menu':
+                if botao_facil.collidepoint(event.pos):
+                    game_state = 'easy_game'
+                elif botao_medio.collidepoint(event.pos):
+                    game_state = 'medium_game'
+                elif botao_dificil.collidepoint(event.pos):
+                    game_state = 'hard_game'
+            else:
+                if botao_return.collidepoint(event.pos):
+                    game_state = 'menu'
+    
+    if game_state == 'menu':
+        draw_menu()
+    elif game_state == 'easy_game':
+        draw_game(random.choice(easy_mazes))
+        game_state = 'waiting'
+    elif game_state == 'medium_game':
+        draw_game(random.choice(medium_mazes))
+        game_state = 'waiting'
+    elif game_state == 'hard_game':
+        draw_game(random.choice(hard_mazes))
+        game_state = 'waiting'
