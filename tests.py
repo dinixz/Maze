@@ -9,8 +9,7 @@ original_stdout = sys.stdout
 with open('output.txt', 'w', encoding='utf-8') as f:
     sys.stdout = f
     
-    
-    lists_mazes = [easy_mazes, medium_mazes, hard_mazes]
+    lists_mazes = [easy_mazes]
     for i, list_mazes in enumerate(lists_mazes):
         print(i + 1)
         counter_manhattan = 0
