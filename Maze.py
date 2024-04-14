@@ -11,12 +11,14 @@ right_symbol = '→'
 
 class Maze:
     def __init__(self, lines:int, columns:int, obstacle=None, array=None) -> None:
-        if not array is None: #apenas para o print_sequence
+        #se um array for fornecido, inicializa o labirinto com esse array, caso contrário, inicializa um labirinto vazio
+        if not array is None:
             self.maze = array
             self.lines, self.columns = self.maze.shape
         else:
             self.maze = np.empty((lines, columns), dtype= 'object') 
             self.lines, self.columns = (lines, columns)
+            
             #ATUAL
             self.cur_line = self.lines - 1 
             self.cur_col = 0 
@@ -26,7 +28,8 @@ class Maze:
             self.target_line = 0
             self.target_col = self.columns - 1
             self.maze[self.target_line, self.target_col] = objetivo
-            
+        
+        #historico dos movimentos
         self.last_move = ['last', float('inf')]
         self.cur_move = ['cur', float('-inf')]
         
@@ -88,8 +91,9 @@ class Maze:
             copied.maze[copied.cur_line - 1, copied.cur_col] = cur
             copied.cur_line -= 1
             
-            if copied.cur_move[0] == 'up': copied.cur_move[1] += 1
-            else: 
+            if copied.cur_move[0] == 'up': #se o movimento anterior for igual ao atual
+                copied.cur_move[1] += 1 
+            else: #mudança de direção
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['up', 1]
                 
@@ -108,8 +112,9 @@ class Maze:
             copied.maze[copied.cur_line + 1, copied.cur_col] = cur
             copied.cur_line += 1
             
-            if copied.cur_move[0] == 'down': copied.cur_move[1] += 1
-            else: 
+            if copied.cur_move[0] == 'down': #se o movimento anterior for igual ao atual
+                copied.cur_move[1] += 1 
+            else: #mudança de direção
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['down', 1]
                 
@@ -128,8 +133,9 @@ class Maze:
             copied.maze[copied.cur_line, copied.cur_col - 1] = cur
             copied.cur_col -= 1
             
-            if copied.cur_move[0] == 'left': copied.cur_move[1] += 1
-            else: 
+            if copied.cur_move[0] == 'left': #se o movimento anterior for igual ao atual
+                copied.cur_move[1] += 1
+            else: #mudança de direção
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['left', 1]
                 
@@ -148,8 +154,9 @@ class Maze:
             copied.maze[copied.cur_line, copied.cur_col + 1] = cur
             copied.cur_col += 1
             
-            if copied.cur_move[0] == 'right': copied.cur_move[1] += 1
-            else: 
+            if copied.cur_move[0] == 'right': #se o movimento anterior for igual ao atual
+                copied.cur_move[1] += 1
+            else: #mudança de direção
                 copied.last_move = copied.cur_move
                 copied.cur_move = ['right', 1]
                 

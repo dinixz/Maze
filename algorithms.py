@@ -1,8 +1,9 @@
 from collections import deque
-import heapq, time
+import heapq
 from Maze import *
 from heuristics import *
 
+#labirintos do site https://erich-friedman.github.io/puzzle/unequal/
 easy_mazes = [
     Maze(3,3),
     Maze(6,6, obstacle= [(0,0), (0,1), (0,2)]),
@@ -41,10 +42,10 @@ hard_mazes = [
 
 #DFS
 def depth_first_search(initial_maze:Maze):
-    stack = deque([initial_maze]) 
+    stack = deque([initial_maze]) #LIFO
     visited = set()
     while stack:
-        node = stack.pop() #get the last element that came in
+        node = stack.pop() #tira o ultimo elemento a entrar
         if node.is_solved():   
             return node
         visited.add(node)
@@ -57,10 +58,10 @@ def depth_first_search(initial_maze:Maze):
 
 #Limited DFS
 def depth_limited_search(initial_maze:Maze, depth_limit:int):
-    stack = deque([(initial_maze, 0)])  
+    stack = deque([(initial_maze, 0)]) #LIFO
     visited = set()
     while stack:
-        node, depth = stack.pop()
+        node, depth = stack.pop() #tira o último elemento a entrar
         if depth < depth_limit:
             if node.is_solved():
                 return node
@@ -82,18 +83,18 @@ def iterative_deepening_search(initial_maze, depth_limit):
 
 #BFS
 def breadth_first_search(initial_maze):
-    queue = deque([initial_maze])  
+    queue = deque([initial_maze]) #FIFO
     while queue:
-        maze = queue.popleft()   #primeiro elemento da fila (por ordem de chegada - FIFO)
+        maze = queue.popleft() #tira o primeiro a ser adicionado
         if maze.is_solved(): 
             return maze
-        for child in maze.children():   # ver as children deste nó
+        for child in maze.children():
             queue.append(child)        
     return None
 
 #Greedy
 def greedy_search(initial_maze:Maze, heuristica):
-    setattr(Maze, "__lt__", lambda self, other: heuristica(self) < heuristica(other)) # Define um método de comparação para os mazes com base na função heurística fornecida
+    setattr(Maze, "__lt__", lambda self, other: heuristica(self) < heuristica(other)) #define um método de comparação para os mazes com base na função heurística fornecida
     priority_queue = [initial_maze]
     visited = set()
     while priority_queue:
@@ -107,9 +108,10 @@ def greedy_search(initial_maze:Maze, heuristica):
                 heapq.heappush(priority_queue, child)
     return None
 
-
+#A* Search
 def a_star_search(maze_inicial, heuristica):
-        return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history)) #-1=estado inicial
+        return greedy_search(maze_inicial, lambda hrst: heuristica(maze_inicial) + len(maze_inicial.move_history) - 1)
 
+#Weighted A* Search
 def  weighted_a_star_search(maze_inicial, heuristica, w):
         return greedy_search(maze_inicial, lambda hrst: w*heuristica(maze_inicial) + len(maze_inicial.move_history) - 1)

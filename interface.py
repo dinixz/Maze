@@ -1,20 +1,16 @@
-import pygame, sys, random
+import pygame, sys, random, time
 from algorithms import *
 from game import *
 
-COR_PAREDE = (34, 139, 34) # green color
+COR_PAREDE = (34, 139, 34) 
 COR_CIRCLE = (34, 139, 34)
-COR_CAMINHO = (200, 200, 200)  # Light gray for empty path
-COR_FUNDO = (0, 0, 0)  # Black background
-COR_OBSTACULO = (50, 50, 50)  # Dark gray for obstacles
-COR_ATUAL = (200, 50, 50)  # Green for current player position
-COR_OBJETIVO = (0, 0, 255)  # Blue for goal position
+COR_FUNDO = (0, 0, 0)  
+COR_OBSTACULO = (50, 50, 50)  
+COR_ATUAL = (200, 50, 50)  
+COR_OBJETIVO = (0, 0, 255)  
 COR_POSITION = (255, 255, 10) 
-COR_BOTAO = (255, 255, 90) #AMARELO
-COR_LETRA = (50, 50, 50) # CINZA
-white = (255, 255, 255)
-green = (0, 255, 0)
-blue = (0, 0, 128)
+COR_BOTAO = (255, 255, 90) 
+COR_LETRA = (50, 50, 50) 
 
 pygame.init()
 
@@ -29,7 +25,7 @@ pygame_retry = pygame.image.load('images/retry.png')
 
 # dimensões do simbolo de return
 return_symbol = pygame.transform.scale(pygame_return, (50,50))
-hint_symbol = pygame.transform.scale(pygame_hint, (80,80))
+hint_symbol = pygame.transform.scale(pygame_hint, (75,75))
 retry_symbol = pygame.transform.scale(pygame_retry, (50,50))
 
 # janela toda
@@ -49,11 +45,11 @@ botao_medio = pygame.Rect(400, 375, 150, 55)
 botao_dificil = pygame.Rect(400, 450, 150, 55)
 
 botao_hint = hint_symbol.get_rect() #cria um retangulo para conter a imagem
-botao_hint.center = (950,650) #posiçao na janela
+botao_hint.center = (950,625) #posiçao na janela
 botao_retry = retry_symbol.get_rect() #cria um retangulo para conter a imagem
-botao_retry.center = (950, 25) #posiçao na janela
+botao_retry.center = (950, 50) #posiçao na janela
 botao_return = return_symbol.get_rect() #cria um retangulo para conter a imagem
-botao_return.center = (25,25) #posiçao na janela
+botao_return.center = (50,50) #posiçao na janela
 
 def seta(tela, cell_size, linha, coluna, num) -> None: #0-up 1-left 2-down 3-right
     superficie = pygame.Surface((cell_size, cell_size)) #cria lugar da seta
@@ -61,7 +57,7 @@ def seta(tela, cell_size, linha, coluna, num) -> None: #0-up 1-left 2-down 3-rig
     pygame.draw.polygon(superficie, (255, 0, 0), [[cell_size//2.1, cell_size//4], [cell_size//3.4, cell_size//2],[cell_size//1.5, cell_size//2]]) #triangulo da seta
     pygame.draw.rect(superficie, (255, 0, 0), (cell_size//2.54 , cell_size//2.5, cell_size//5, cell_size //2.7)) #retangulo da seta
     angulo_rotacao = 90  #rotaçao da seta
-    superficie_rotacionada = pygame.transform.rotate(superficie, angulo_rotacao*num) #roda a celula
+    superficie_rotacionada = pygame.transform.rotate(superficie, angulo_rotacao*num) #roda a seta
 
     tela.blit(superficie_rotacionada,( cell_size*coluna, cell_size*linha)) #desenha a seta
 
@@ -268,7 +264,7 @@ while running:
                 if botao_facil.collidepoint(event.pos): #easy
                     initial_maze = random.choice(easy_mazes) #guarda se para se quiser repetir o jogo
                     maze = initial_maze.copy() #para nao mudar o inicial
-                    final_maze = a_star_search(maze, distancia_manhattan) #para ter a funçao de game over
+                    final_maze = weighted_a_star_search(maze, distancia_manhattan, 2.5) #para ter a funçao de game over #para ter a funçao de game over
                     
                     if game_mode == 'ia':
                         draw_game(final_maze, game_mode) #desenha os passos
@@ -280,7 +276,7 @@ while running:
                     
                     initial_maze = random.choice(medium_mazes) #guarda se para se quiser repetir o jogo
                     maze = initial_maze.copy() #para nao mudar o inicial
-                    final_maze = a_star_search(maze, distancia_manhattan) #para ter a funçao de game over
+                    final_maze = weighted_a_star_search(maze, distancia_manhattan, 2.5) #para ter a funçao de game over
                     
                     if game_mode == 'ia':
                         draw_game(final_maze, game_mode) #desenha os passos
@@ -292,7 +288,7 @@ while running:
                     
                     initial_maze = random.choice(hard_mazes) #guarda se para se quiser repetir o jogo
                     maze = initial_maze.copy() #para nao mudar o inicial
-                    final_maze = a_star_search(maze, distancia_manhattan) #para ter a funçao de game over
+                    final_maze = weighted_a_star_search(maze, distancia_manhattan, 2.5) #para ter a funçao de game over #para ter a funçao de game over
                     
                     if game_mode == 'ia':
                         draw_game(final_maze, game_mode) #desenha os passos
@@ -336,11 +332,11 @@ while running:
                 elif event.key == pygame.K_d: #right
                     maze = draw_game(maze, game_mode, 'right')
                 
-                if maze.is_solved():
+                if maze.is_solved(): #jogo acabado
                     time.sleep(0.5)
                     pop_final_message('YOU WON')
                     game_state = 'finished'
-                elif game_over(maze, final_maze):
+                elif game_over(maze, final_maze): #game over
                     time.sleep(0.5)
                     pop_final_message('GAME OVER')
                     game_state = 'game_over'

@@ -1,4 +1,0 @@
-1
-Euclidiana:  0
-Manhattan:  6
-Empates:  1
